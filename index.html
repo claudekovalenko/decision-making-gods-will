@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e1420">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<title>Centered</title>
+<style>
+  :root{
+    --bg:#0e1420; --bg2:#141d2e; --card:#1a2436; --card2:#202c42;
+    --line:#2b3a55; --ink:#e9eef7; --ink-dim:#9fb0c9; --ink-faint:#65758f;
+    --gold:#d4a94e; --gold-soft:#e8c887; --teal:#7fb2a6; --rose:#c98a8a;
+    --green:#8fbf8f; --radius:16px;
+    font-size:16px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{height:100%;}
+  body{
+    background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
+    line-height:1.55;
+    padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  }
+  .serif{font-family:Georgia,"Times New Roman",serif;}
+  header{
+    padding:22px 20px 10px; display:flex; align-items:baseline; justify-content:space-between;
+    max-width:680px; margin:0 auto;
+  }
+  header h1{font-size:1.25rem; letter-spacing:.06em; color:var(--gold-soft); font-weight:600;}
+  header .verse{font-size:.75rem; color:var(--ink-faint); font-style:italic;}
+  main{max-width:680px; margin:0 auto; padding:8px 20px 24px;}
+  .view{display:none; animation:fade .25s ease;}
+  .view.active{display:block;}
+  @keyframes fade{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* ── nav ── */
+  nav{
+    position:fixed; bottom:0; left:0; right:0; background:var(--bg2);
+    border-top:1px solid var(--line); display:flex; z-index:50;
+    padding-bottom:env(safe-area-inset-bottom);
+  }
+  nav button{
+    flex:1; background:none; border:none; color:var(--ink-faint); padding:12px 4px 10px;
+    font-size:.68rem; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:3px;
+  }
+  nav button .ico{font-size:1.25rem; line-height:1;}
+  nav button.active{color:var(--gold);}
+
+  /* ── circle ── */
+  .circle-wrap{display:flex; justify-content:center; padding:10px 0 4px;}
+  svg.compass{width:min(88vw,360px); height:auto; overflow:visible;}
+  .orbit-label{fill:var(--ink-dim); font-size:11px; letter-spacing:.12em; text-transform:uppercase;}
+  .center-word{fill:var(--gold); font-size:15px; font-weight:600; letter-spacing:.05em;}
+  .center-sub{fill:var(--ink-dim); font-size:9.5px;}
+  .commit-dot{cursor:pointer;}
+  .creed{
+    margin:14px 0 18px; padding:16px 18px; background:var(--card); border:1px solid var(--line);
+    border-radius:var(--radius); color:var(--ink-dim); font-size:.92rem;
+  }
+  .creed strong{color:var(--gold-soft); font-weight:600;}
+  .creed .edit-link{color:var(--teal); font-size:.8rem; cursor:pointer; display:inline-block; margin-top:8px;}
+
+  h2{font-size:1.05rem; margin:22px 0 10px; color:var(--ink); font-weight:600;}
+  h2 small{color:var(--ink-faint); font-weight:400; font-size:.78rem; margin-left:8px;}
+
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:15px 16px; margin-bottom:10px;
+  }
+  .card.tappable{cursor:pointer; transition:border-color .15s;}
+  .card.tappable:hover{border-color:var(--gold);}
+  .card .title{font-weight:600; font-size:.98rem;}
+  .card .meta{font-size:.78rem; color:var(--ink-faint); margin-top:3px;}
+  .badge{
+    display:inline-block; font-size:.68rem; padding:2px 9px; border-radius:99px;
+    letter-spacing:.05em; text-transform:uppercase; vertical-align:middle;
+  }
+  .badge.held{background:#2a3a2a; color:var(--green);}
+  .badge.fulfilled{background:#3a3322; color:var(--gold-soft);}
+  .badge.released{background:#33283a; color:#b9a3d0;}
+  .badge.due{background:#3a2a2a; color:var(--rose);}
+  .empty{color:var(--ink-faint); font-size:.88rem; padding:18px 4px; text-align:center; font-style:italic;}
+
+  button.primary, button.ghost, button.danger{
+    border-radius:12px; padding:13px 18px; font-size:.95rem; cursor:pointer; font-weight:600;
+    border:1px solid transparent; width:100%; margin-top:10px;
+  }
+  button.primary{background:var(--gold); color:#1c1608;}
+  button.ghost{background:none; border-color:var(--line); color:var(--ink-dim);}
+  button.danger{background:none; border-color:#4a3040; color:var(--rose);}
+  .btn-row{display:flex; gap:10px;}
+  .btn-row button{margin-top:10px;}
+
+  label.field{display:block; margin:14px 0 4px; font-size:.8rem; color:var(--ink-dim); letter-spacing:.03em;}
+  input[type=text], input[type=date], textarea, select{
+    width:100%; background:var(--bg2); border:1px solid var(--line); border-radius:10px;
+    color:var(--ink); padding:11px 12px; font-size:.95rem; font-family:inherit;
+  }
+  textarea{min-height:74px; resize:vertical;}
+  input:focus, textarea:focus, select:focus{outline:none; border-color:var(--gold);}
+
+  /* ── discern flow ── */
+  .step{display:none;}
+  .step.active{display:block; animation:fade .25s ease;}
+  .step-dots{display:flex; gap:6px; justify-content:center; margin:6px 0 16px;}
+  .step-dots span{width:8px; height:8px; border-radius:50%; background:var(--line);}
+  .step-dots span.on{background:var(--gold);}
+  .prompt{font-size:1.12rem; margin-bottom:6px;}
+  .hint{font-size:.82rem; color:var(--ink-faint); margin-bottom:10px;}
+  .gate{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+  .gate button{
+    text-align:left; background:var(--card2); border:1px solid var(--line); color:var(--ink);
+    border-radius:12px; padding:13px 14px; font-size:.92rem; cursor:pointer; width:100%;
+  }
+  .gate button.selected{border-color:var(--gold); background:#26314a;}
+  .timerbox{
+    text-align:center; padding:8px 0 2px; font-size:.8rem; color:var(--ink-faint);
+  }
+  .timerbox b{color:var(--gold-soft); font-variant-numeric:tabular-nums; font-size:1rem;}
+
+  /* ── articulation preview ── */
+  .statement{
+    background:var(--card2); border-left:3px solid var(--gold); border-radius:0 12px 12px 0;
+    padding:14px 16px; margin:12px 0; font-size:1rem; color:var(--ink);
+  }
+  .copy-note{font-size:.75rem; color:var(--ink-faint); text-align:center;}
+
+  /* ── detail modal ── */
+  .overlay{
+    display:none; position:fixed; inset:0; background:rgba(6,10,18,.72); z-index:100;
+    align-items:flex-end; justify-content:center;
+  }
+  .overlay.open{display:flex;}
+  .sheet{
+    background:var(--bg2); border-radius:20px 20px 0 0; width:100%; max-width:680px;
+    max-height:86vh; overflow-y:auto; padding:20px 20px calc(24px + env(safe-area-inset-bottom));
+    border:1px solid var(--line); border-bottom:none;
+  }
+  .sheet h3{font-size:1.1rem; margin-bottom:4px;}
+  .sheet .close{float:right; background:none; border:none; color:var(--ink-faint); font-size:1.3rem; cursor:pointer;}
+  .divider{border:none; border-top:1px solid var(--line); margin:16px 0;}
+  .quiet{font-size:.85rem; color:var(--ink-dim);}
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(90px + env(safe-area-inset-bottom));
+    background:var(--gold); color:#1c1608; padding:10px 20px; border-radius:99px; font-size:.85rem;
+    font-weight:600; z-index:200; opacity:0; transition:opacity .3s; pointer-events:none;
+  }
+  .toast.show{opacity:1;}
+</style>
+</head>
+<body>
+
+<header>
+  <h1 class="serif">CENTERED</h1>
+  <div class="verse serif">“In all thy ways acknowledge him” — Prov 3:6</div>
+</header>
+
+<main>
+
+  <!-- ═══════════ CIRCLE / HOME ═══════════ -->
+  <section id="view-circle" class="view active">
+    <div class="circle-wrap"><svg class="compass" id="compass" viewBox="0 0 320 320"></svg></div>
+
+    <div class="creed" id="creedBox">
+      <div id="creedText"></div>
+      <span class="edit-link" onclick="openCenterEditor()">Edit my center ›</span>
+    </div>
+
+    <h2>Reviews due <small>commitments asking for attention</small></h2>
+    <div id="dueList"></div>
+
+    <button class="primary" onclick="go('discern'); resetFlow();">＋ Bring a decision to the center</button>
+  </section>
+
+  <!-- ═══════════ DISCERN FLOW ═══════════ -->
+  <section id="view-discern" class="view">
+    <div class="step-dots" id="dots"></div>
+    <div class="timerbox">Time in this decision: <b id="flowTimer">0:00</b><br>
+    <span style="font-size:.72rem">Clarity loves a deadline. Aim to finish this flow in one sitting.</span></div>
+
+    <!-- Step 1: Name it -->
+    <div class="step active" data-step="0">
+      <p class="prompt serif">What decision is before you?</p>
+      <p class="hint">Name it in one sentence. Vague decisions can't be committed to — or surrendered.</p>
+      <input type="text" id="dTitle" placeholder="e.g., Take the worship-leading role through December">
+      <label class="field">What makes this hard? (optional — name the fear)</label>
+      <textarea id="dFear" placeholder="e.g., If God redirects me later, I'm afraid people will think I heard wrong."></textarea>
+      <button class="primary" onclick="nextStep(1)">Next</button>
+    </div>
+
+    <!-- Step 2: The four gates -->
+    <div class="step" data-step="1">
+      <p class="prompt serif">The four gates</p>
+      <p class="hint">God's will is rarely a hidden puzzle. Scripture, wisdom, counsel, and peace agree far more often than we fear. Answer honestly — “unsure” is allowed.</p>
+      <div id="gates"></div>
+      <button class="primary" onclick="nextStep(2)">Next</button>
+    </div>
+
+    <!-- Step 3: Decide -->
+    <div class="step" data-step="2">
+      <p class="prompt serif">Decide.</p>
+      <p class="hint" id="gateSummary"></p>
+      <div class="gate">
+        <button data-decision="yes" onclick="pickDecision(this)">✓ &nbsp;I commit to this</button>
+        <button data-decision="no" onclick="pickDecision(this)">✗ &nbsp;I decline this — and that's also a decision</button>
+        <button data-decision="wait" onclick="pickDecision(this)">◷ &nbsp;I set a decide-by date (waiting on one named thing)</button>
+      </div>
+      <div id="waitBox" style="display:none">
+        <label class="field">What exactly am I waiting for?</label>
+        <input type="text" id="dWaitingOn" placeholder="e.g., my spouse's answer, the offer letter">
+        <label class="field">I will decide by</label>
+        <input type="date" id="dDecideBy">
+      </div>
+      <label class="field">Review this commitment on</label>
+      <input type="date" id="dReview">
+      <button class="primary" onclick="nextStep(3)">Next</button>
+    </div>
+
+    <!-- Step 4: Articulate -->
+    <div class="step" data-step="3">
+      <p class="prompt serif">Say it like someone who isn't confused.</p>
+      <p class="hint">This is your answer when people question you. Conviction, decision, humility — in that order.</p>
+      <label class="field">Because I believe…</label>
+      <input type="text" id="aBelief" placeholder="e.g., God gives wisdom generously and honors faithful commitment">
+      <label class="field">…I have decided to…</label>
+      <input type="text" id="aDecision" placeholder="e.g., serve in this role through December">
+      <label class="field">…and I hold it with open hands, which means…</label>
+      <input type="text" id="aOpen" placeholder="e.g., I'll review it in prayer on the review date, and release it if God redirects">
+      <div class="statement serif" id="livePreview"></div>
+      <button class="primary" onclick="saveDecision()">Seal this commitment</button>
+      <button class="ghost" onclick="prevStep(2)">Back</button>
+    </div>
+  </section>
+
+  <!-- ═══════════ COMMITMENTS ═══════════ -->
+  <section id="view-commit" class="view">
+    <h2>Held <small>walk these out with your whole heart</small></h2>
+    <div id="heldList"></div>
+    <h2>Waiting <small>decide-by dates set</small></h2>
+    <div id="waitList"></div>
+    <h2>Completed <small>fulfilled &amp; released — both are faithfulness</small></h2>
+    <div id="doneList"></div>
+  </section>
+
+  <!-- ═══════════ WALK / ABOUT ═══════════ -->
+  <section id="view-walk" class="view">
+    <h2 class="serif" style="font-size:1.2rem">The theology of this app</h2>
+    <div class="card quiet">
+      <p><strong style="color:var(--gold-soft)">Commitment is not contrary to God's will.</strong> It is one of the main ways you walk in it. God steers moving ships — He redirects people who are going somewhere, not people frozen at the harbor.</p>
+    </div>
+    <div class="card quiet">
+      <p><strong style="color:var(--gold-soft)">Being redirected is not the same as being wrong.</strong> A commitment released back to God in obedience is a completed act of faithfulness, not a failed decision. That's why this app has a “Released” state with honor, not shame.</p>
+    </div>
+    <div class="card quiet">
+      <p><strong style="color:var(--gold-soft)">Clarity is a kindness to others.</strong> When you can say “Because I believe…, I have decided…, and I hold it with open hands,” people hear conviction with humility — not confusion. You don't owe everyone an explanation, but you can always have one.</p>
+    </div>
+    <div class="card quiet">
+      <p><strong style="color:var(--gold-soft)">Speed is spiritual.</strong> Most decisions don't need more information; they need courage. If the four gates are open, prolonged hesitation is usually fear of people, not reverence for God. Decide, then facilitate: work hard, do it well, keep reviewing in prayer.</p>
+    </div>
+    <div class="card quiet">
+      <p style="font-size:.8rem; color:var(--ink-faint)">Prov 3:5–6 · Prov 16:9 · Jas 1:5–8 · Ps 37:5 · Prov 16:3 · Gal 1:10</p>
+    </div>
+  </section>
+</main>
+
+<nav>
+  <button id="nav-circle" class="active" onclick="go('circle')"><span class="ico">◎</span>Circle</button>
+  <button id="nav-discern" onclick="go('discern'); resetFlow();"><span class="ico">✦</span>Discern</button>
+  <button id="nav-commit" onclick="go('commit')"><span class="ico">✓</span>Commitments</button>
+  <button id="nav-walk" onclick="go('walk')"><span class="ico">♰</span>Walk</button>
+</nav>
+
+<!-- detail sheet -->
+<div class="overlay" id="overlay" onclick="if(event.target===this) closeSheet()">
+  <div class="sheet" id="sheet"></div>
+</div>
+
+<!-- center editor sheet -->
+<div class="overlay" id="centerOverlay" onclick="if(event.target===this) closeCenterEditor()">
+  <div class="sheet">
+    <button class="close" onclick="closeCenterEditor()">✕</button>
+    <h3 class="serif">My Center</h3>
+    <p class="quiet">The unchanging middle of the circle. Decisions rotate around it; it doesn't rotate around them.</p>
+    <label class="field">Who God is to me (one line)</label>
+    <input type="text" id="cGod">
+    <label class="field">Who I am in Him (one line)</label>
+    <input type="text" id="cMe">
+    <label class="field">My anchor verse</label>
+    <input type="text" id="cVerse">
+    <button class="primary" onclick="saveCenter()">Save my center</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ───────── storage ───────── */
+const DB_KEY = 'centered.v1';
+const load = () => JSON.parse(localStorage.getItem(DB_KEY) || '{"center":null,"decisions":[]}');
+const save = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+let db = load();
+if (!db.center) db.center = {
+  god: 'A good Father who gives wisdom generously and without reproach',
+  me: 'His child — led, not graded',
+  verse: 'Commit thy way unto the LORD; trust also in him. — Psalm 37:5'
+};
+
+/* ───────── nav ───────── */
+function go(view){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+view).classList.add('active');
+  document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('nav-'+view).classList.add('active');
+  if(view==='circle') renderCircle();
+  if(view==='commit') renderCommitments();
+  window.scrollTo(0,0);
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+const fmt = d => d ? new Date(d+'T00:00:00').toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '—';
+const esc = s => (s||'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+/* ───────── circle rendering ───────── */
+function renderCircle(){
+  const svg=document.getElementById('compass');
+  const held=db.decisions.filter(d=>d.status==='held');
+  const R1=145, R2=96, CX=160, CY=160;
+  let dots='';
+  held.forEach((d,i)=>{
+    const a=(-90 + i*(360/Math.max(held.length,1)))*Math.PI/180;
+    const x=CX+R2*Math.cos(a), y=CY+R2*Math.sin(a);
+    const short=esc(d.title.length>14 ? d.title.slice(0,13)+'…' : d.title);
+    dots+=`<g class="commit-dot" onclick="openSheet('${d.id}')">
+      <circle cx="${x}" cy="${y}" r="9" fill="var(--teal)"/>
+      <text x="${x}" y="${y + (Math.sin(a)>=0?24:-16)}" text-anchor="middle" fill="var(--ink-dim)" font-size="10">${short}</text>
+    </g>`;
+  });
+  const seasonLabels=['DISCERN','DECIDE','ARTICULATE','WALK','REVIEW'].map((w,i)=>{
+    const a=(-90+i*72)*Math.PI/180;
+    const x=CX+(R1+14)*Math.cos(a), y=CY+(R1+14)*Math.sin(a);
+    return `<text class="orbit-label" x="${x}" y="${y}" text-anchor="middle">${w}</text>`;
+  }).join('');
+  svg.innerHTML=`
+    <circle cx="${CX}" cy="${CY}" r="${R1}" fill="none" stroke="var(--line)" stroke-width="1.5" stroke-dasharray="3 5"/>
+    <circle cx="${CX}" cy="${CY}" r="${R2}" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+    <circle cx="${CX}" cy="${CY}" r="52" fill="var(--card)" stroke="var(--gold)" stroke-width="2"/>
+    <text class="center-word" x="${CX}" y="${CY-2}" text-anchor="middle">GOD</text>
+    <text class="center-sub" x="${CX}" y="${CY+14}" text-anchor="middle">the fixed point</text>
+    ${seasonLabels}${dots}`;
+  document.getElementById('creedText').innerHTML=
+    `<strong>${esc(db.center.god)}.</strong><br>I am ${esc(db.center.me)}.<br><em class="serif">${esc(db.center.verse)}</em>`;
+
+  // due reviews
+  const today=new Date().toISOString().slice(0,10);
+  const due=db.decisions.filter(d=>(d.status==='held'&&d.review&&d.review<=today)||(d.status==='waiting'&&d.decideBy&&d.decideBy<=today));
+  document.getElementById('dueList').innerHTML = due.length
+    ? due.map(d=>`<div class="card tappable" onclick="openSheet('${d.id}')">
+        <span class="badge due">${d.status==='waiting'?'decide-by reached':'review due'}</span>
+        <div class="title">${esc(d.title)}</div>
+        <div class="meta">${d.status==='waiting'?'You said you\'d decide by '+fmt(d.decideBy):'Bring it back to the center in prayer'}</div>
+      </div>`).join('')
+    : `<div class="empty">Nothing due. Walk in what you've committed to.</div>`;
+}
+
+/* ───────── center editor ───────── */
+function openCenterEditor(){
+  document.getElementById('cGod').value=db.center.god;
+  document.getElementById('cMe').value=db.center.me;
+  document.getElementById('cVerse').value=db.center.verse;
+  document.getElementById('centerOverlay').classList.add('open');
+}
+function closeCenterEditor(){document.getElementById('centerOverlay').classList.remove('open');}
+function saveCenter(){
+  db.center={god:cGod.value.trim()||db.center.god, me:cMe.value.trim()||db.center.me, verse:cVerse.value.trim()||db.center.verse};
+  save(db); closeCenterEditor(); renderCircle(); toast('Center saved');
+}
+
+/* ───────── discern flow ───────── */
+const GATES=[
+  {k:'scripture', q:'Scripture — does anything in God\'s word forbid or command this?', opts:['It\'s permitted','It\'s commended','Unsure','It\'s forbidden']},
+  {k:'wisdom', q:'Wisdom — does this steward my time, gifts, and season well?', opts:['Yes','Mostly','Unsure','No']},
+  {k:'counsel', q:'Counsel — what do the wise people who love me say?', opts:['For it','Mixed','Haven\'t asked','Against it']},
+  {k:'peace', q:'Peace — when I imagine having committed, is my spirit at rest?', opts:['At rest','Nervous but at peace','Unsure','Dread']}
+];
+let flowStart=null, timerInt=null, chosenDecision=null;
+
+function resetFlow(){
+  document.querySelectorAll('#view-discern .step').forEach((s,i)=>s.classList.toggle('active',i===0));
+  ['dTitle','dFear','dWaitingOn','aBelief','aDecision','aOpen'].forEach(id=>document.getElementById(id).value='');
+  chosenDecision=null;
+  document.getElementById('waitBox').style.display='none';
+  document.querySelectorAll('#view-discern .gate button').forEach(b=>b.classList.remove('selected'));
+  // default dates: review in 30 days, decide-by in 7
+  const plus=(n)=>{const t=new Date(); t.setDate(t.getDate()+n); return t.toISOString().slice(0,10);};
+  document.getElementById('dReview').value=plus(30);
+  document.getElementById('dDecideBy').value=plus(7);
+  // gates
+  document.getElementById('gates').innerHTML=GATES.map(g=>`
+    <p class="prompt" style="font-size:.95rem; margin-top:14px">${g.q}</p>
+    <div class="gate" data-gate="${g.k}">
+      ${g.opts.map(o=>`<button type="button" onclick="pickGate(this)">${o}</button>`).join('')}
+    </div>`).join('');
+  renderDots(0);
+  flowStart=Date.now();
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    const s=Math.floor((Date.now()-flowStart)/1000);
+    document.getElementById('flowTimer').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+  },1000);
+  updatePreview();
+}
+function renderDots(n){
+  document.getElementById('dots').innerHTML=[0,1,2,3].map(i=>`<span class="${i<=n?'on':''}"></span>`).join('');
+}
+function showStep(n){
+  document.querySelectorAll('#view-discern .step').forEach(s=>s.classList.toggle('active',+s.dataset.step===n));
+  renderDots(n); window.scrollTo(0,0);
+}
+function nextStep(n){
+  if(n===1 && !dTitle.value.trim()){toast('Name the decision first'); return;}
+  if(n===3 && !chosenDecision){toast('Choose a path — waiting with a date counts'); return;}
+  if(n===2) summarizeGates();
+  if(n===3) prefillArticulation();
+  showStep(n);
+}
+function prevStep(n){showStep(n);}
+function pickGate(btn){
+  btn.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+}
+function gateAnswers(){
+  const out={};
+  document.querySelectorAll('#gates .gate').forEach(g=>{
+    const sel=g.querySelector('.selected');
+    out[g.dataset.gate]=sel?sel.textContent.trim():'—';
+  });
+  return out;
+}
+function summarizeGates(){
+  const a=gateAnswers();
+  const red=(a.scripture==="It's forbidden");
+  const dreads=(a.peace==='Dread');
+  let msg;
+  if(red) msg='Scripture closes this door. Declining it IS God\'s will — you can say so plainly.';
+  else if(dreads) msg='Dread is worth listening to. You may still commit, decline, or set a short decide-by date — but don\'t stall without a date.';
+  else msg='No gate is closed. If you\'re still hesitating, ask whether you\'re waiting on God — or on people\'s approval.';
+  document.getElementById('gateSummary').textContent=msg;
+}
+function pickDecision(btn){
+  document.querySelectorAll('[data-decision]').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');
+  chosenDecision=btn.dataset.decision;
+  document.getElementById('waitBox').style.display = chosenDecision==='wait' ? 'block' : 'none';
+}
+function prefillArticulation(){
+  if(!aDecision.value.trim()){
+    const t=dTitle.value.trim();
+    aDecision.value = chosenDecision==='yes' ? t
+      : chosenDecision==='no' ? 'say no to: '+t
+      : 'decide about "'+t+'" by '+fmt(dDecideBy.value);
+  }
+  if(!aOpen.value.trim()) aOpen.value='I\'ll review it in prayer on '+fmt(dReview.value)+', and release it if God redirects';
+  updatePreview();
+}
+function updatePreview(){
+  const b=aBelief.value.trim()||'…', d=aDecision.value.trim()||'…', o=aOpen.value.trim()||'…';
+  document.getElementById('livePreview').innerHTML=
+    `“Because I believe <strong>${esc(b)}</strong>, I have decided to <strong>${esc(d)}</strong> — and I hold it with open hands, which means <strong>${esc(o)}</strong>.”`;
+}
+['aBelief','aDecision','aOpen'].forEach(id=>document.addEventListener('input',e=>{if(e.target.id===id)updatePreview();}));
+
+function saveDecision(){
+  if(!aBelief.value.trim()||!aDecision.value.trim()){toast('Finish your statement — this is your clarity'); return;}
+  const secs=Math.floor((Date.now()-flowStart)/1000);
+  db.decisions.unshift({
+    id:'d'+Date.now(),
+    title:dTitle.value.trim(),
+    fear:dFear.value.trim(),
+    gates:gateAnswers(),
+    decision:chosenDecision,
+    status: chosenDecision==='wait' ? 'waiting' : chosenDecision==='no' ? 'fulfilled' : 'held',
+    waitingOn:dWaitingOn.value.trim(),
+    decideBy: chosenDecision==='wait' ? dDecideBy.value : null,
+    review:dReview.value,
+    statement:{belief:aBelief.value.trim(), decision:aDecision.value.trim(), open:aOpen.value.trim()},
+    created:new Date().toISOString().slice(0,10),
+    decidedInSeconds:secs,
+    journal:[]
+  });
+  save(db); clearInterval(timerInt);
+  toast(chosenDecision==='no' ? 'A clear no is a faithful decision' : 'Committed — now walk it out');
+  go('circle');
+}
+
+/* ───────── commitments list ───────── */
+function cardFor(d){
+  const badge = d.status==='held'?'held':d.status==='waiting'?'due':d.status==='released'?'released':'fulfilled';
+  const label = d.status==='waiting' ? 'decide by '+fmt(d.decideBy) : d.status;
+  return `<div class="card tappable" onclick="openSheet('${d.id}')">
+    <span class="badge ${badge}">${label}</span>
+    <div class="title">${esc(d.title)}</div>
+    <div class="meta">${d.status==='held'?'review '+fmt(d.review):'made '+fmt(d.created)}</div>
+  </div>`;
+}
+function renderCommitments(){
+  const by=s=>db.decisions.filter(d=>s.includes(d.status));
+  const held=by(['held']), wait=by(['waiting']), done=by(['fulfilled','released']);
+  heldList.innerHTML = held.length?held.map(cardFor).join(''):'<div class="empty">No held commitments yet.</div>';
+  waitList.innerHTML = wait.length?wait.map(cardFor).join(''):'<div class="empty">Nothing in waiting — good. Waiting always gets a date here.</div>';
+  doneList.innerHTML = done.length?done.map(cardFor).join(''):'<div class="empty">Your faithfulness record will grow here.</div>';
+}
+
+/* ───────── detail sheet ───────── */
+let sheetId=null;
+function openSheet(id){
+  sheetId=id;
+  const d=db.decisions.find(x=>x.id===id); if(!d) return;
+  const s=d.statement;
+  const mins=Math.round((d.decidedInSeconds||0)/60);
+  document.getElementById('sheet').innerHTML=`
+    <button class="close" onclick="closeSheet()">✕</button>
+    <h3 class="serif">${esc(d.title)}</h3>
+    <p class="quiet">Made ${fmt(d.created)}${mins?` · decided in ~${mins} min`:''} · status: <b>${d.status}</b></p>
+    <div class="statement serif">“Because I believe <strong>${esc(s.belief)}</strong>, I have decided to <strong>${esc(s.decision)}</strong> — and I hold it with open hands, which means <strong>${esc(s.open)}</strong>.”</div>
+    <button class="ghost" onclick="copyStatement('${d.id}')">Copy my statement (for when people ask)</button>
+    ${d.fear?`<hr class="divider"><p class="quiet"><b>The fear I named:</b> ${esc(d.fear)}</p>`:''}
+    <hr class="divider">
+    <p class="quiet"><b>Gates:</b> Scripture — ${esc(d.gates.scripture)} · Wisdom — ${esc(d.gates.wisdom)} · Counsel — ${esc(d.gates.counsel)} · Peace — ${esc(d.gates.peace)}</p>
+    ${d.journal.length?`<hr class="divider"><p class="quiet"><b>Walk journal</b></p>`+d.journal.map(j=>`<p class="quiet" style="margin-top:6px">· ${fmt(j.date)} — ${esc(j.note)}</p>`).join(''):''}
+    <hr class="divider">
+    <label class="field">Add a walk note (what happened, what God is doing)</label>
+    <textarea id="jNote"></textarea>
+    <button class="ghost" onclick="addNote()">Add note</button>
+    ${d.status==='held'||d.status==='waiting'?`
+      <div class="btn-row">
+        <button class="primary" onclick="setStatus('fulfilled')">Fulfilled ✓</button>
+        <button class="danger" onclick="releaseFlow()">Release to God</button>
+      </div>
+      ${d.status==='held'?`<label class="field">Move review date</label><input type="date" id="newReview" value="${d.review||''}" onchange="moveReview(this.value)">`:''}
+    `:''}
+  `;
+  document.getElementById('overlay').classList.add('open');
+}
+function closeSheet(){document.getElementById('overlay').classList.remove('open'); renderCircle(); renderCommitments();}
+function copyStatement(id){
+  const d=db.decisions.find(x=>x.id===id); const s=d.statement;
+  const text=`Because I believe ${s.belief}, I have decided to ${s.decision} — and I hold it with open hands, which means ${s.open}.`;
+  (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast('Copied — say it without apology'),()=>toast('Copy not available'));
+}
+function addNote(){
+  const n=document.getElementById('jNote').value.trim(); if(!n) return;
+  const d=db.decisions.find(x=>x.id===sheetId);
+  d.journal.push({date:new Date().toISOString().slice(0,10), note:n});
+  save(db); openSheet(sheetId); toast('Noted');
+}
+function setStatus(s){
+  const d=db.decisions.find(x=>x.id===sheetId);
+  d.status=s; save(db); openSheet(sheetId);
+  toast(s==='fulfilled'?'Well done, faithful servant':'Released with honor');
+}
+function releaseFlow(){
+  const why=prompt('Releasing this back to God is obedience, not failure.\n\nWhat is God redirecting, and what did you learn?');
+  if(why===null) return;
+  const d=db.decisions.find(x=>x.id===sheetId);
+  if(why.trim()) d.journal.push({date:new Date().toISOString().slice(0,10), note:'RELEASED — '+why.trim()});
+  d.status='released'; save(db); openSheet(sheetId);
+  toast('Released with honor');
+}
+function moveReview(v){
+  const d=db.decisions.find(x=>x.id===sheetId);
+  d.review=v; save(db); toast('Review moved');
+}
+
+/* ───────── init ───────── */
+save(db);
+renderCircle();
+renderCommitments();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
