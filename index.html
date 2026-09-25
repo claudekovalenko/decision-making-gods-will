@@ -149,6 +149,22 @@
     font-weight:600; z-index:200; opacity:0; transition:opacity .3s; pointer-events:none;
   }
   .toast.show{opacity:1;}
+
+  .majors{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media (max-width:420px){ .majors{grid-template-columns:1fr;} }
+  .major{background:var(--card); border:1px solid var(--line); border-top:3px solid var(--gold); border-radius:var(--radius); padding:14px;}
+  .major .kicker{font-size:.66rem; letter-spacing:.18em; color:var(--gold); text-transform:uppercase;}
+  .major .name{font-size:1.1rem; font-weight:600; margin-top:4px;}
+  .major .aim{font-size:.86rem; color:var(--ink-dim); margin-top:6px; line-height:1.4;}
+  .major .count{font-size:.76rem; color:var(--ink-faint); margin-top:8px;}
+  .major .steps{margin-top:6px; font-size:.82rem;}
+  .major .steps div{cursor:pointer; color:var(--ink-dim); padding:2px 0;}
+  .major .steps div:hover{color:var(--gold-soft);}
+  .major button.primary{padding:10px 12px; font-size:.86rem;}
+  .major a.out{display:inline-block; margin-top:8px; color:var(--teal); font-size:.8rem; text-decoration:none;}
+  .major .edit-link{color:var(--teal); font-size:.76rem; cursor:pointer; display:inline-block; margin-top:8px; margin-left:10px;}
+  .guided{text-align:center; color:var(--ink-faint); font-size:.8rem; font-style:italic; margin-top:8px;}
+  .serves-tag{font-size:.7rem; color:var(--gold-soft); margin-left:6px;}
 </style>
 </head>
 <body>
@@ -169,6 +185,10 @@
       <span class="edit-link" onclick="openCenterEditor()">Edit my center ›</span>
     </div>
 
+    <h2>The two major decisions <small>everything else orbits these</small></h2>
+    <div class="majors" id="majorList"></div>
+    <p class="guided serif">Both guided and supported by God’s will — not my timing, not my fear.</p>
+
     <h2>Reviews due <small>commitments asking for attention</small></h2>
     <div id="dueList"></div>
 
@@ -188,6 +208,8 @@
       <input type="text" id="dTitle" placeholder="e.g., Take the worship-leading role through December">
       <label class="field">What makes this hard? (optional — name the fear)</label>
       <textarea id="dFear" placeholder="e.g., If God redirects me later, I'm afraid people will think I heard wrong."></textarea>
+      <label class="field">Which major decision does this serve?</label>
+      <div class="gate" id="majorPick"></div>
       <button class="primary" onclick="nextStep(1)">Next</button>
     </div>
 
@@ -308,6 +330,17 @@ if (!db.center) db.center = {
   verse: 'Commit thy way unto the LORD; trust also in him. — Psalm 37:5'
 };
 
+/* The two major decisions everything else is weighed against. */
+const MAJOR_DEFAULTS = [
+  { id:'church', name:'Church', aim:'Planted in a church I\u2019m comfortable in, where it feels like family.',
+    link:'../church-finder/', linkText:'Open the church finder ›' },
+  { id:'marriage', name:'Marriage', aim:'Preparing to be a husband who looks like Christ, and recognising the wife God has for me.' }
+];
+if (!Array.isArray(db.majors)) db.majors = MAJOR_DEFAULTS.map(m=>({id:m.id, name:m.name, aim:m.aim}));
+const majorOf = id => db.majors.find(m=>m.id===id);
+const majorLink = id => MAJOR_DEFAULTS.find(m=>m.id===id) || {};
+let chosenMajor = '';
+
 /* ───────── nav ───────── */
 function go(view){
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
@@ -333,8 +366,31 @@ function renderCircle(){
   const held=db.decisions.filter(d=>d.status==='held');
   const R1=145, R2=96, CX=160, CY=160;
   let dots='';
-  held.forEach((d,i)=>{
-    const a=(-90 + i*(360/Math.max(held.length,1)))*Math.PI/180;
+  const MAJOR_ANGLE={church:180, marriage:0};
+  const majors=db.majors.map(m=>{
+    const a=(MAJOR_ANGLE[m.id]??90)*Math.PI/180;
+    const x=CX+R2*Math.cos(a), y=CY+R2*Math.sin(a);
+    return `<g><circle cx="${x}" cy="${y}" r="16" fill="var(--card2)" stroke="var(--gold)" stroke-width="2"/>
+      <text x="${x}" y="${y+32}" text-anchor="middle" fill="var(--gold-soft)" font-size="10.5" letter-spacing="1.5">${esc(m.name.toUpperCase())}</text></g>`;
+  }).join('');
+  // Commitments serving a major fan out beside it; the rest take the top and bottom arcs.
+  const groups={};
+  held.forEach(d=>{const k=MAJOR_ANGLE[d.major]!==undefined?d.major:'';(groups[k]=groups[k]||[]).push(d);});
+  const angleFor={};
+  Object.keys(groups).forEach(k=>{
+    const list=groups[k];
+    list.forEach((d,i)=>{
+      if(k){
+        const off=(i%2?1:-1)*38*(Math.floor(i/2)+1);
+        angleFor[d.id]=MAJOR_ANGLE[k]+off;
+      } else {
+        const free=[-90,90,-60,-120,60,120];
+        angleFor[d.id]=i<free.length?free[i]:-90+i*(360/list.length);
+      }
+    });
+  });
+  held.forEach((d)=>{
+    const a=angleFor[d.id]*Math.PI/180;
     const x=CX+R2*Math.cos(a), y=CY+R2*Math.sin(a);
     const short=esc(d.title.length>14 ? d.title.slice(0,13)+'…' : d.title);
     dots+=`<g class="commit-dot" onclick="openSheet('${d.id}')">
@@ -353,7 +409,8 @@ function renderCircle(){
     <circle cx="${CX}" cy="${CY}" r="52" fill="var(--card)" stroke="var(--gold)" stroke-width="2"/>
     <text class="center-word" x="${CX}" y="${CY-2}" text-anchor="middle">GOD</text>
     <text class="center-sub" x="${CX}" y="${CY+14}" text-anchor="middle">the fixed point</text>
-    ${seasonLabels}${dots}`;
+    ${seasonLabels}${majors}${dots}`;
+  renderMajors();
   document.getElementById('creedText').innerHTML=
     `<strong>${esc(db.center.god)}.</strong><br>I am ${esc(db.center.me)}.<br><em class="serif">${esc(db.center.verse)}</em>`;
 
@@ -367,6 +424,38 @@ function renderCircle(){
         <div class="meta">${d.status==='waiting'?'You said you\'d decide by '+fmt(d.decideBy):'Bring it back to the center in prayer'}</div>
       </div>`).join('')
     : `<div class="empty">Nothing due. Walk in what you've committed to.</div>`;
+}
+
+/* ───────── the two major decisions ───────── */
+function renderMajors(){
+  document.getElementById('majorList').innerHTML=db.majors.map(m=>{
+    const steps=db.decisions.filter(d=>d.major===m.id);
+    const live=steps.filter(d=>d.status==='held'||d.status==='waiting');
+    const l=majorLink(m.id);
+    return `<div class="major">
+      <div class="kicker">Major decision</div>
+      <div class="name serif">${esc(m.name)}</div>
+      <div class="aim">${esc(m.aim)}</div>
+      <div class="count">${steps.length?`${live.length} active · ${steps.length-live.length} completed step${steps.length-live.length===1?'':'s'}`:'No steps brought to the center yet'}</div>
+      ${live.length?`<div class="steps">${live.slice(0,4).map(d=>`<div onclick="openSheet('${d.id}')">· ${esc(d.title)}</div>`).join('')}</div>`:''}
+      <button class="primary" onclick="startFor('${m.id}')">＋ Bring a step to the center</button>
+      ${l.link?`<a class="out" href="${l.link}">${esc(l.linkText)}</a>`:''}
+      <span class="edit-link" onclick="editMajor('${m.id}')">Edit ›</span>
+    </div>`;
+  }).join('');
+}
+function startFor(id){ go('discern'); resetFlow(); pickMajor(id); }
+function renderMajorPick(){
+  const opts=db.majors.map(m=>({id:m.id, label:m.name})).concat([{id:'', label:'Neither — something else'}]);
+  document.getElementById('majorPick').innerHTML=opts.map(o=>
+    `<button type="button" class="${o.id===chosenMajor?'selected':''}" onclick="pickMajor('${o.id}')">${esc(o.label)}</button>`).join('');
+}
+function pickMajor(id){ chosenMajor=id; renderMajorPick(); }
+function editMajor(id){
+  const m=majorOf(id); if(!m) return;
+  const aim=prompt('What is the '+m.name.toLowerCase()+' decision about, in one sentence?', m.aim);
+  if(aim===null) return;
+  m.aim=aim.trim()||m.aim; save(db); renderCircle(); toast('Saved');
 }
 
 /* ───────── center editor ───────── */
@@ -395,6 +484,7 @@ function resetFlow(){
   document.querySelectorAll('#view-discern .step').forEach((s,i)=>s.classList.toggle('active',i===0));
   ['dTitle','dFear','dWaitingOn','aBelief','aDecision','aOpen'].forEach(id=>document.getElementById(id).value='');
   chosenDecision=null;
+  chosenMajor=''; renderMajorPick();
   document.getElementById('waitBox').style.display='none';
   document.querySelectorAll('#view-discern .gate button').forEach(b=>b.classList.remove('selected'));
   // default dates: review in 30 days, decide-by in 7
@@ -482,6 +572,7 @@ function saveDecision(){
   db.decisions.unshift({
     id:'d'+Date.now(),
     title:dTitle.value.trim(),
+    major:chosenMajor,
     fear:dFear.value.trim(),
     gates:gateAnswers(),
     decision:chosenDecision,
@@ -505,7 +596,7 @@ function cardFor(d){
   const label = d.status==='waiting' ? 'decide by '+fmt(d.decideBy) : d.status;
   return `<div class="card tappable" onclick="openSheet('${d.id}')">
     <span class="badge ${badge}">${label}</span>
-    <div class="title">${esc(d.title)}</div>
+    <div class="title">${esc(d.title)}${majorOf(d.major)?`<span class="serves-tag">· ${esc(majorOf(d.major).name)}</span>`:''}</div>
     <div class="meta">${d.status==='held'?'review '+fmt(d.review):'made '+fmt(d.created)}</div>
   </div>`;
 }
@@ -527,6 +618,7 @@ function openSheet(id){
   document.getElementById('sheet').innerHTML=`
     <button class="close" onclick="closeSheet()">✕</button>
     <h3 class="serif">${esc(d.title)}</h3>
+    ${majorOf(d.major)?`<p class="quiet">Serves the major decision: <b>${esc(majorOf(d.major).name)}</b></p>`:''}
     <p class="quiet">Made ${fmt(d.created)}${mins?` · decided in ~${mins} min`:''} · status: <b>${d.status}</b></p>
     <div class="statement serif">“Because I believe <strong>${esc(s.belief)}</strong>, I have decided to <strong>${esc(s.decision)}</strong> — and I hold it with open hands, which means <strong>${esc(s.open)}</strong>.”</div>
     <button class="ghost" onclick="copyStatement('${d.id}')">Copy my statement (for when people ask)</button>
