@@ -1,4 +1,4 @@
-const CACHE = 'centered-v2';
+const CACHE = 'centered-v3';
 const ASSETS = ['./', './index.html', './manifest.json', './icon.svg'];
 
 self.addEventListener('install', (e) => {

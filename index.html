@@ -165,6 +165,54 @@
   .major .edit-link{color:var(--teal); font-size:.76rem; cursor:pointer; display:inline-block; margin-top:8px; margin-left:10px;}
   .guided{text-align:center; color:var(--ink-faint); font-size:.8rem; font-style:italic; margin-top:8px;}
   .serves-tag{font-size:.7rem; color:var(--gold-soft); margin-left:6px;}
+
+  /* ── weigh ── */
+  .back{color:var(--teal); font-size:.85rem; cursor:pointer; display:inline-block; margin-bottom:6px;}
+  .chips{display:flex; flex-wrap:wrap; gap:7px;}
+  .chip{
+    background:var(--card2); border:1px solid var(--line); color:var(--ink-dim); border-radius:99px;
+    padding:7px 13px; font-size:.82rem; cursor:pointer; font-family:inherit;
+  }
+  .chip.on{border-color:var(--gold); color:var(--gold-soft); background:#26314a;}
+  .chip.auto{border-style:dashed; cursor:default;}
+  .sug-group{margin-top:14px;}
+  .sug-group .q{font-size:.86rem; color:var(--gold-soft); font-style:italic; margin-bottom:6px;}
+  .sug{display:flex; align-items:center; gap:8px; padding:8px 10px; background:var(--card); border:1px solid var(--line); border-radius:10px; margin-bottom:6px; font-size:.86rem;}
+  .sug .txt{flex:1;}
+  .sug button{background:none; border:1px solid var(--line); color:var(--ink-dim); border-radius:8px; padding:4px 8px; font-size:.74rem; cursor:pointer; white-space:nowrap;}
+  .sug button.keep{border-color:var(--gold); color:var(--gold-soft);}
+  .side{font-size:.62rem; letter-spacing:.1em; padding:2px 6px; border-radius:6px; white-space:nowrap;}
+  .side.pro{background:#22362f; color:var(--teal);}
+  .side.con{background:#3a2a2a; color:var(--rose);}
+  .pc{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  @media (max-width:520px){ .pc{grid-template-columns:1fr;} }
+  .pc h3{font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; margin-bottom:6px;}
+  .pc .pros h3{color:var(--teal);} .pc .cons h3{color:var(--rose);}
+  .item{display:flex; gap:8px; align-items:flex-start; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 10px; margin-bottom:6px; font-size:.86rem;}
+  .item .txt{flex:1; cursor:pointer;}
+  .item .src{display:block; font-size:.68rem; color:var(--ink-faint);}
+  .item .wt{cursor:pointer; color:var(--gold); letter-spacing:1px; font-size:.8rem; white-space:nowrap;}
+  .item .x{cursor:pointer; color:var(--ink-faint);}
+  .add-row{display:flex; gap:6px; margin-top:6px;}
+  .add-row input{flex:1;}
+  .add-row select{width:auto;}
+  .add-row button{background:var(--card2); border:1px solid var(--line); color:var(--ink); border-radius:10px; padding:0 14px; cursor:pointer;}
+  .scale{margin:4px 0 12px;}
+  .scale .bar{display:flex; height:12px; border-radius:99px; overflow:hidden; background:var(--line);}
+  .scale .bar .p{background:var(--teal);} .scale .bar .c{background:var(--rose);}
+  .scale .lbl{font-size:.8rem; color:var(--ink-dim); margin-top:5px; text-align:center;}
+  .counsel .who{font-weight:600; font-size:.92rem;}
+  .counsel .said{font-size:.86rem; color:var(--ink-dim); margin-top:4px; font-style:italic;}
+  .lean{font-size:.66rem; padding:2px 8px; border-radius:99px; letter-spacing:.05em; text-transform:uppercase; margin-left:6px; vertical-align:middle;}
+  .lean.for{background:#22362f; color:var(--teal);}
+  .lean.caution,.lean.pray{background:#3a3322; color:var(--gold-soft);}
+  .lean.mixed{background:#2b3346; color:var(--ink-dim);}
+  .lean.against{background:#3a2a2a; color:var(--rose);}
+  .insight{padding:10px 12px 10px 14px; border-radius:0 10px 10px 0; background:var(--card); margin-bottom:8px; font-size:.88rem; border-left:3px solid var(--line);}
+  .insight.good{border-left-color:var(--teal);}
+  .insight.warn{border-left-color:var(--rose);}
+  .insight.info{border-left-color:var(--gold);}
+  .two{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
 </style>
 </head>
 <body>
@@ -192,7 +240,86 @@
     <h2>Reviews due <small>commitments asking for attention</small></h2>
     <div id="dueList"></div>
 
+    <h2>Weighing now <small>ideas gathering pros, cons &amp; counsel</small></h2>
+    <div id="homeWeighList"></div>
+
     <button class="primary" onclick="go('discern'); resetFlow();">＋ Bring a decision to the center</button>
+    <button class="ghost" onclick="go('weigh')">⚖ Not ready? Weigh an idea first</button>
+  </section>
+
+  <!-- ═══════════ WEIGH ═══════════ -->
+  <section id="view-weigh" class="view">
+    <div id="weighHome">
+      <p class="prompt serif">Weigh it before you decide it.</p>
+      <p class="hint">Name an idea, run it through filters, and pros and cons surface on their own. Weigh them, gather wise counsel, and see what it all adds up to. Take as many days here as you need — then take it to the gates in one sitting.</p>
+      <input type="text" id="wNewTitle" placeholder="What are you weighing? e.g., Take the new job and move to Austin">
+      <button class="primary" onclick="newWeigh()">Start weighing</button>
+      <h2>Weighing now</h2>
+      <div id="weighList"></div>
+      <h2>My filters <small>lenses every idea can be run through</small></h2>
+      <div id="filterManage"></div>
+      <button class="ghost" onclick="openFilterEditor()">＋ Make my own filter</button>
+    </div>
+
+    <div id="weighWork" style="display:none">
+      <span class="back" onclick="closeWeigh()">‹ All ideas being weighed</span>
+      <h2 class="serif" style="font-size:1.25rem; margin-top:4px" id="wTitle"></h2>
+      <div class="meta quiet" id="wMeta"></div>
+
+      <h2>1 · Run it through filters <small>tap a filter to surface pros &amp; cons</small></h2>
+      <div class="chips" id="wFilters"></div>
+      <div id="wSuggest"></div>
+
+      <h2>2 · Pros &amp; cons <small>tap ●○○ to set how much it weighs</small></h2>
+      <div class="scale" id="wScale"></div>
+      <div class="pc">
+        <div class="pros"><h3>Pros</h3><div id="wPros"></div></div>
+        <div class="cons"><h3>Cons</h3><div id="wCons"></div></div>
+      </div>
+      <div class="add-row">
+        <input type="text" id="wItemText" placeholder="Add your own pro or con">
+        <select id="wItemSide"><option value="pro">Pro</option><option value="con">Con</option></select>
+        <button onclick="addOwnItem()">Add</button>
+      </div>
+
+      <h2>3 · Wise counsel <small>“in the multitude of counsellors there is safety”</small></h2>
+      <div id="wCounsel"></div>
+      <div class="card">
+        <div class="two">
+          <div><label class="field" style="margin-top:0">Who</label><input type="text" id="cWho" placeholder="e.g., Pastor Mike"></div>
+          <div><label class="field" style="margin-top:0">Who they are to me</label>
+            <select id="cRel">
+              <option>Pastor / mentor</option><option>Parent / family</option><option>Close friend</option>
+              <option>Spouse / significant other</option><option>Expert in this area</option><option>Someone affected by this</option>
+            </select></div>
+        </div>
+        <div class="two">
+          <div><label class="field">How well they know this situation</label>
+            <select id="cKnows"><option value="1">A little</option><option value="2" selected>Well</option><option value="3">Deeply</option></select></div>
+          <div><label class="field">Their lean</label>
+            <select id="cLean">
+              <option value="for">Go for it</option><option value="caution">Proceed with caution</option>
+              <option value="mixed">Mixed / could go either way</option><option value="pray">Pray more first</option>
+              <option value="against">Hold off / don't</option>
+            </select></div>
+        </div>
+        <label class="field">What they said</label>
+        <textarea id="cSaid" placeholder="Write it as close to their words as you can."></textarea>
+        <label class="field">A point they raised that belongs on the list (optional)</label>
+        <div class="add-row" style="margin-top:0">
+          <input type="text" id="cPoint" placeholder="e.g., You'd lose your community right when you need it">
+          <select id="cPointSide"><option value="con">Con</option><option value="pro">Pro</option></select>
+        </div>
+        <button class="primary" onclick="addCounsel()">Add this counsel</button>
+      </div>
+      <button class="ghost" onclick="askForCounsel()">Copy a message asking someone for counsel</button>
+
+      <h2>4 · Insight <small>what it all adds up to</small></h2>
+      <div id="wInsight"></div>
+
+      <button class="primary" onclick="toGates()">Take it to the gates →</button>
+      <button class="danger" onclick="setAsideWeigh()">Set this idea aside</button>
+    </div>
   </section>
 
   <!-- ═══════════ DISCERN FLOW ═══════════ -->
@@ -211,6 +338,7 @@
       <label class="field">Which major decision does this serve?</label>
       <div class="gate" id="majorPick"></div>
       <button class="primary" onclick="nextStep(1)">Next</button>
+      <button class="ghost" onclick="weighFromFlow()">⚖ Not ready? Weigh it first (pros, cons &amp; counsel)</button>
     </div>
 
     <!-- Step 2: The four gates -->
@@ -290,6 +418,7 @@
 
 <nav>
   <button id="nav-circle" class="active" onclick="go('circle')"><span class="ico">◎</span>Circle</button>
+  <button id="nav-weigh" onclick="go('weigh')"><span class="ico">⚖</span>Weigh</button>
   <button id="nav-discern" onclick="go('discern'); resetFlow();"><span class="ico">✦</span>Discern</button>
   <button id="nav-commit" onclick="go('commit')"><span class="ico">✓</span>Commitments</button>
   <button id="nav-walk" onclick="go('walk')"><span class="ico">♰</span>Walk</button>
@@ -313,6 +442,25 @@
     <label class="field">My anchor verse</label>
     <input type="text" id="cVerse">
     <button class="primary" onclick="saveCenter()">Save my center</button>
+  </div>
+</div>
+
+<!-- filter editor sheet -->
+<div class="overlay" id="filterOverlay" onclick="if(event.target===this) closeFilterEditor()">
+  <div class="sheet">
+    <button class="close" onclick="closeFilterEditor()">✕</button>
+    <h3 class="serif" id="fEdTitle">Make a filter</h3>
+    <p class="quiet">A filter is a lens you run ideas through. Give it a question, then the pros and cons it usually brings up — they'll appear as suggestions whenever you apply it.</p>
+    <label class="field">Name</label>
+    <input type="text" id="fName" placeholder="e.g., Sabbath rhythm">
+    <label class="field">The question it asks</label>
+    <input type="text" id="fQ" placeholder="e.g., Does this protect a day of rest each week?">
+    <label class="field">Pros it tends to surface (one per line)</label>
+    <textarea id="fPros" placeholder="Leaves room for rest and worship"></textarea>
+    <label class="field">Cons it tends to surface (one per line)</label>
+    <textarea id="fCons" placeholder="Eats into my Sabbath"></textarea>
+    <button class="primary" onclick="saveFilter()">Save filter</button>
+    <button class="danger" id="fDelete" onclick="deleteFilter()">Delete filter</button>
   </div>
 </div>
 
@@ -349,6 +497,7 @@ function go(view){
   document.getElementById('nav-'+view).classList.add('active');
   if(view==='circle') renderCircle();
   if(view==='commit') renderCommitments();
+  if(view==='weigh') renderWeighHome();
   window.scrollTo(0,0);
 }
 
@@ -424,6 +573,11 @@ function renderCircle(){
         <div class="meta">${d.status==='waiting'?'You said you\'d decide by '+fmt(d.decideBy):'Bring it back to the center in prayer'}</div>
       </div>`).join('')
     : `<div class="empty">Nothing due. Walk in what you've committed to.</div>`;
+
+  const weighing=db.weighs.filter(w=>w.status==='weighing');
+  document.getElementById('homeWeighList').innerHTML = weighing.length
+    ? weighing.map(weighCard).join('')
+    : `<div class="empty">Nothing on the scales right now.</div>`;
 }
 
 /* ───────── the two major decisions ───────── */
@@ -478,12 +632,12 @@ const GATES=[
   {k:'counsel', q:'Counsel — what do the wise people who love me say?', opts:['For it','Mixed','Haven\'t asked','Against it']},
   {k:'peace', q:'Peace — when I imagine having committed, is my spirit at rest?', opts:['At rest','Nervous but at peace','Unsure','Dread']}
 ];
-let flowStart=null, timerInt=null, chosenDecision=null;
+let flowStart=null, timerInt=null, chosenDecision=null, fromWeigh=null;
 
 function resetFlow(){
   document.querySelectorAll('#view-discern .step').forEach((s,i)=>s.classList.toggle('active',i===0));
   ['dTitle','dFear','dWaitingOn','aBelief','aDecision','aOpen'].forEach(id=>document.getElementById(id).value='');
-  chosenDecision=null;
+  chosenDecision=null; fromWeigh=null;
   chosenMajor=''; renderMajorPick();
   document.getElementById('waitBox').style.display='none';
   document.querySelectorAll('#view-discern .gate button').forEach(b=>b.classList.remove('selected'));
@@ -541,6 +695,11 @@ function summarizeGates(){
   if(red) msg='Scripture closes this door. Declining it IS God\'s will — you can say so plainly.';
   else if(dreads) msg='Dread is worth listening to. You may still commit, decline, or set a short decide-by date — but don\'t stall without a date.';
   else msg='No gate is closed. If you\'re still hesitating, ask whether you\'re waiting on God — or on people\'s approval.';
+  const w=fromWeigh&&weighOf(fromWeigh);
+  if(w){
+    const t=tally(w), c=counselLean(w);
+    msg+=` Your weighing: pros ${t.P} vs cons ${t.C} (${t.lean})`+(w.counsel.length?`; ${w.counsel.length} counselor${w.counsel.length===1?'':'s'} leaning ${c.label}.`:'; no counsel recorded.');
+  }
   document.getElementById('gateSummary').textContent=msg;
 }
 function pickDecision(btn){
@@ -583,8 +742,11 @@ function saveDecision(){
     statement:{belief:aBelief.value.trim(), decision:aDecision.value.trim(), open:aOpen.value.trim()},
     created:new Date().toISOString().slice(0,10),
     decidedInSeconds:secs,
-    journal:[]
+    journal:[],
+    ...weighSnapshot(fromWeigh)
   });
+  const w=fromWeigh&&weighOf(fromWeigh);
+  if(w){ w.status='decided'; w.decisionId=db.decisions[0].id; }
   save(db); clearInterval(timerInt);
   toast(chosenDecision==='no' ? 'A clear no is a faithful decision' : 'Committed — now walk it out');
   go('circle');
@@ -624,6 +786,7 @@ function openSheet(id){
     <button class="ghost" onclick="copyStatement('${d.id}')">Copy my statement (for when people ask)</button>
     ${d.fear?`<hr class="divider"><p class="quiet"><b>The fear I named:</b> ${esc(d.fear)}</p>`:''}
     <hr class="divider">
+    ${weighSheetHTML(d)}
     <p class="quiet"><b>Gates:</b> Scripture — ${esc(d.gates.scripture)} · Wisdom — ${esc(d.gates.wisdom)} · Counsel — ${esc(d.gates.counsel)} · Peace — ${esc(d.gates.peace)}</p>
     ${d.journal.length?`<hr class="divider"><p class="quiet"><b>Walk journal</b></p>`+d.journal.map(j=>`<p class="quiet" style="margin-top:6px">· ${fmt(j.date)} — ${esc(j.note)}</p>`).join(''):''}
     <hr class="divider">
@@ -668,6 +831,356 @@ function releaseFlow(){
 function moveReview(v){
   const d=db.decisions.find(x=>x.id===sheetId);
   d.review=v; save(db); toast('Review moved');
+}
+
+/* ═══════════════════════ WEIGH ═══════════════════════
+   An idea goes on the scales: filters surface pros & cons, the user weighs
+   them, records wise counsel, and an insight engine reads it all back. */
+if (!Array.isArray(db.weighs)) db.weighs = [];
+if (!Array.isArray(db.filters)) db.filters = [];   // user-made filters
+
+/* Built-in filters: lenses any idea can be run through. */
+const BUILTIN_FILTERS = [
+  { id:'f-scripture', name:'Scripture', q:'Does God’s word speak to this — commend it, warn against it, or leave me free?',
+    pros:['Fits what Scripture commends (love, faithfulness, generosity, integrity)','Helps me love God and my neighbor more fully','I’m free in Christ to choose this'],
+    cons:['Brushes up against something Scripture warns about','Could feed pride, greed, or self-reliance','Would make it harder to keep a promise I’ve already made'] },
+  { id:'f-steward', name:'Stewardship', q:'Is this a wise use of my time, money, energy, and gifts in this season?',
+    pros:['A wise use of money — it pays off or blesses others','Uses my gifts where they actually help people','Frees up time or energy for what matters most'],
+    cons:['Costs more money than I can comfortably give it','Costs more time than this season has room for','Would leave me stretched thin or burned out'] },
+  { id:'f-calling', name:'Calling & gifts', q:'Does this line up with how God has made and gifted me?',
+    pros:['Fits how God has wired me','Grows me in a direction I sense God calling me','Others have affirmed my gifts in this area'],
+    cons:['Asks me to live mostly out of my weaknesses','Pulls me away from something I’m clearly called to now'] },
+  { id:'f-people', name:'People affected', q:'Who does this affect, and how — family, church, friends, the people I serve?',
+    pros:['Blesses the people closest to me','Puts me near community that will sharpen me','Lets me serve someone who needs it'],
+    cons:['Places a real burden on people I love','Distances me from my community or church family','Someone I’m responsible for would pay the cost'] },
+  { id:'f-101010', name:'10 / 10 / 10', q:'How will I feel about this in 10 days, 10 months, and 10 years?',
+    pros:['In 10 years I’ll be glad I did this','Hard now, but good for the long run','I’d regret not trying'],
+    cons:['Feels good now but I’d likely regret it later','Hard to undo if it goes wrong','Solves a short-term itch, not a long-term need'] },
+  { id:'f-fear', name:'Fear vs. faith', q:'Is fear, or faith, doing the deciding?',
+    pros:['Saying yes would mean trusting God past my comfort','The main thing stopping me is fear of what people think'],
+    cons:['I’m drawn to this mostly to win approval','I’m rushing to escape discomfort, not following a leading','It’s about proving myself'] },
+  { id:'f-peace', name:'Motives & peace', q:'Why do I really want this, and is my spirit at rest about it?',
+    pros:['I can say my motive out loud without embarrassment','There’s a steady peace when I pray about it'],
+    cons:['There’s a check in my spirit I keep pushing past','I’d hide my real reasons from people I trust'] },
+  { id:'f-season', name:'This season', q:'Is this the right time — not just the right thing?',
+    pros:['The door is open now and may not be later','My season actually has room for this'],
+    cons:['Right thing, wrong time','I’m already carrying a lot right now','A season of waiting might be part of the answer'] }
+];
+
+/* Categories detected automatically from the idea's wording. */
+const CATEGORIES = [
+  { id:'work', name:'Work & career', re:/\b(job|career|role|position|offer|promot|business|work|boss|hire|hiring|quit|resign|salary|company|startup|internship)/i,
+    pros:['Better income or stability','Room to grow skills and responsibility','Work that matters to me'],
+    cons:['Less time for family, church, or rest','Leaving people or a team I’m committed to','Unknown culture or leadership'] },
+  { id:'move', name:'Moving', re:/\b(move|moving|relocat|city|apartment|house|home|rent|lease|state|town|abroad|overseas)/i,
+    pros:['A fresh start in a place that fits this season','Closer to people or opportunities that matter'],
+    cons:['Leaving my church family and friends','Rebuilding community from scratch','Moving costs and disruption'] },
+  { id:'money', name:'Money & purchases', re:/\b(buy|purchase|spend|car|invest|loan|debt|afford|price|cost|mortgage|save|savings|\$)/i,
+    pros:['Meets a real need, not just a want','Fits within a budget I’ve already set','Will serve others too, not only me'],
+    cons:['Would mean taking on debt','Money I may need for something more important','Ongoing costs I haven’t counted (Luke 14:28)'] },
+  { id:'love', name:'Relationships', re:/\b(date|dating|marry|marriage|propose|proposal|relationship|girlfriend|boyfriend|court|engage|wife|husband|breakup|break up)/i,
+    pros:['They draw me closer to Christ','People who know us both affirm it','We share faith, values, and direction'],
+    cons:['People who love me have real concerns','Something I keep excusing instead of addressing','We want different things for the future'] },
+  { id:'church', name:'Church & ministry', re:/\b(church|ministry|serve|serving|volunteer|lead|worship|small group|mission|pastor|bible study|youth)/i,
+    pros:['Builds up the body of Christ','Uses my gifts for the kingdom','Roots me deeper in a church family'],
+    cons:['Overcommits me — ministry out of exhaustion','Yes to this means no to rest or family','Am I filling a slot or following a calling?'] },
+  { id:'school', name:'School & learning', re:/\b(school|degree|class|course|study|college|university|program|certificat|semester|grad)/i,
+    pros:['Equips me for what I sense God calling me to','Opens doors that are closed now'],
+    cons:['Time and tuition cost','Delays other things this season needs'] }
+];
+
+const majorFilters = () => db.majors.map(m=>({
+  id:'f-major-'+m.id, name:'Serves '+m.name, q:`Does this move me toward my ${m.name.toLowerCase()} decision — “${m.aim}”`,
+  pros:['Moves me toward: '+m.aim, `Makes room to invest in ${m.name.toLowerCase()}`],
+  cons:[`Pulls time or focus away from ${m.name.toLowerCase()}`, `Could make the ${m.name.toLowerCase()} decision harder later`]
+}));
+const allFilters = () => BUILTIN_FILTERS.concat(majorFilters(), db.filters);
+const filterById = id => allFilters().concat(CATEGORIES).find(f=>f.id===id);
+const detectCategories = title => CATEGORIES.filter(c=>c.re.test(title||''));
+
+const weighOf = id => db.weighs.find(w=>w.id===id);
+let weighId = null;
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+
+/* ── home of the weigh tab ── */
+function weighCard(w){
+  const t=tally(w);
+  return `<div class="card tappable" onclick="openWeigh('${w.id}')">
+    <span class="badge fulfilled">weighing</span>
+    <div class="title">${esc(w.title)}${majorOf(w.major)?`<span class="serves-tag">· ${esc(majorOf(w.major).name)}</span>`:''}</div>
+    <div class="meta">${w.items.length?`${t.pros.length} pros · ${t.cons.length} cons · ${t.lean}`:'No pros or cons yet'} · ${w.counsel.length} counsel</div>
+  </div>`;
+}
+function renderWeighHome(){
+  document.getElementById('weighHome').style.display = weighId ? 'none' : 'block';
+  document.getElementById('weighWork').style.display = weighId ? 'block' : 'none';
+  if(weighId){ renderWeigh(); return; }
+  const list=db.weighs.filter(w=>w.status==='weighing');
+  document.getElementById('weighList').innerHTML = list.length ? list.map(weighCard).join('')
+    : `<div class="empty">Nothing on the scales. Name an idea above to begin.</div>`;
+  document.getElementById('filterManage').innerHTML = `<div class="chips">` +
+    BUILTIN_FILTERS.concat(majorFilters()).map(f=>`<span class="chip auto" title="${esc(f.q)}">${esc(f.name)}</span>`).join('') +
+    db.filters.map(f=>`<button class="chip on" onclick="openFilterEditor('${f.id}')">${esc(f.name)} ✎</button>`).join('') +
+    `</div><p class="hint" style="margin-top:8px">Dashed filters are built in. Your own filters are gold — tap one to edit it. Categories like work, moving, money, relationships, church, and school are detected from your wording automatically.</p>`;
+}
+function newWeigh(title, major){
+  title = (title ?? document.getElementById('wNewTitle').value).trim();
+  if(!title){ toast('Name the idea first'); return; }
+  const w={ id:uid('w'), title, major:major||'', created:new Date().toISOString().slice(0,10),
+    status:'weighing', filters:[], dismissed:[], items:[], counsel:[] };
+  db.weighs.unshift(w); save(db);
+  document.getElementById('wNewTitle').value='';
+  openWeigh(w.id);
+}
+function openWeigh(id){ weighId=id; go('weigh'); }
+function closeWeigh(){ weighId=null; renderWeighHome(); window.scrollTo(0,0); }
+function weighFromFlow(){
+  const t=dTitle.value.trim();
+  if(!t){ toast('Name the decision first'); return; }
+  clearInterval(timerInt);
+  newWeigh(t, chosenMajor);
+}
+
+/* ── the workspace ── */
+function renderWeigh(){
+  const w=weighOf(weighId); if(!w){ closeWeigh(); return; }
+  document.getElementById('wTitle').innerHTML = `${esc(w.title)} <span class="edit-link" style="font-size:.78rem;color:var(--teal);cursor:pointer" onclick="renameWeigh()">rename</span>`;
+  const majorOpts = [{id:'',name:'nothing in particular'}].concat(db.majors);
+  document.getElementById('wMeta').innerHTML = `Started ${fmt(w.created)} · serves:
+    <select style="width:auto;padding:4px 8px;font-size:.82rem" onchange="setWeighMajor(this.value)">
+      ${majorOpts.map(m=>`<option value="${m.id}" ${m.id===w.major?'selected':''}>${esc(m.name)}</option>`).join('')}
+    </select>`;
+  renderWeighFilters(w); renderItems(w); renderCounsel(w); renderInsight(w);
+}
+function renameWeigh(){
+  const w=weighOf(weighId); const t=prompt('Rename this idea', w.title);
+  if(t && t.trim()){ w.title=t.trim(); save(db); renderWeigh(); }
+}
+function setWeighMajor(v){ const w=weighOf(weighId); w.major=v; save(db); renderWeigh(); }
+
+function renderWeighFilters(w){
+  const auto=detectCategories(w.title);
+  document.getElementById('wFilters').innerHTML =
+    auto.map(c=>`<span class="chip on auto" title="Detected from your wording">✦ ${esc(c.name)}</span>`).join('') +
+    allFilters().map(f=>`<button class="chip ${w.filters.includes(f.id)?'on':''}" onclick="toggleFilter('${f.id}')">${esc(f.name)}</button>`).join('');
+  // suggestions from detected categories + applied filters
+  const have=new Set(w.items.map(i=>i.text.toLowerCase()).concat(w.dismissed.map(t=>t.toLowerCase())));
+  const groups=auto.concat(w.filters.map(filterById).filter(Boolean)).map(f=>{
+    const sug=[].concat(f.pros.map((t,i)=>({side:'pro',t,i})), f.cons.map((t,i)=>({side:'con',t,i})))
+      .filter(s=>!have.has(s.t.toLowerCase()));
+    if(!sug.length) return '';
+    return `<div class="sug-group"><div class="q">${esc(f.name)} — ${esc(f.q||'')}</div>` +
+      sug.map(s=>`<div class="sug"><span class="side ${s.side}">${s.side.toUpperCase()}</span><span class="txt">${esc(s.t)}</span>
+        <button class="keep" onclick="keepSug('${f.id}','${s.side}',${s.i},false)">Keep</button>
+        <button title="Add it to the other side" onclick="keepSug('${f.id}','${s.side}',${s.i},true)">⇄</button>
+        <button title="Doesn't apply" onclick="dismissSug('${f.id}','${s.side}',${s.i})">✕</button></div>`).join('') + `</div>`;
+  }).join('');
+  document.getElementById('wSuggest').innerHTML = groups ||
+    `<p class="hint" style="margin-top:10px">${w.filters.length||auto.length?'All suggestions handled. Try another filter.':'Tap a filter above. Keep the pros and cons that are true for you, flip ones that cut the other way, and dismiss the rest.'}</p>`;
+}
+function toggleFilter(id){
+  const w=weighOf(weighId);
+  w.filters = w.filters.includes(id) ? w.filters.filter(x=>x!==id) : w.filters.concat(id);
+  save(db); renderWeigh();
+}
+function sugText(fid,side,i){ const f=filterById(fid); return (side==='pro'?f.pros:f.cons)[i]; }
+function keepSug(fid,side,i,flip){
+  const w=weighOf(weighId);
+  w.items.push({id:uid('i'), side: flip?(side==='pro'?'con':'pro'):side, text:sugText(fid,side,i), weight:2, source:filterById(fid).name});
+  save(db); renderWeigh();
+}
+function dismissSug(fid,side,i){
+  const w=weighOf(weighId); w.dismissed.push(sugText(fid,side,i)); save(db); renderWeigh();
+}
+
+/* ── pros & cons ── */
+function tally(w){
+  const pros=w.items.filter(i=>i.side==='pro'), cons=w.items.filter(i=>i.side==='con');
+  const P=pros.reduce((a,i)=>a+i.weight,0), C=cons.reduce((a,i)=>a+i.weight,0);
+  const tot=P+C, diff=P-C;
+  const lean = !tot ? 'unweighed' : Math.abs(diff)<=tot*0.15 ? 'too close to call' : diff>0 ? 'leans yes' : 'leans no';
+  return {pros,cons,P,C,tot,diff,lean};
+}
+function renderItems(w){
+  const t=tally(w);
+  const row=i=>`<div class="item">
+    <span class="txt" onclick="editItem('${i.id}')">${esc(i.text)}<span class="src">${esc(i.source||'')}</span></span>
+    <span class="wt" title="How much this weighs — tap to change" onclick="cycleWeight('${i.id}')">${'●'.repeat(i.weight)}${'○'.repeat(3-i.weight)}</span>
+    <span class="x" title="Remove" onclick="removeItem('${i.id}')">✕</span></div>`;
+  document.getElementById('wPros').innerHTML = t.pros.length ? t.pros.map(row).join('') : `<div class="empty" style="padding:8px">None yet</div>`;
+  document.getElementById('wCons').innerHTML = t.cons.length ? t.cons.map(row).join('') : `<div class="empty" style="padding:8px">None yet</div>`;
+  const pct = t.tot ? Math.round(t.P/t.tot*100) : 50;
+  document.getElementById('wScale').innerHTML = `<div class="bar"><div class="p" style="width:${pct}%"></div><div class="c" style="width:${100-pct}%"></div></div>
+    <div class="lbl">Pros <b style="color:var(--teal)">${t.P}</b> · Cons <b style="color:var(--rose)">${t.C}</b> — ${t.lean}</div>`;
+}
+function addOwnItem(){
+  const el=document.getElementById('wItemText'), text=el.value.trim(); if(!text) return;
+  const w=weighOf(weighId);
+  w.items.push({id:uid('i'), side:document.getElementById('wItemSide').value, text, weight:2, source:'my own'});
+  el.value=''; save(db); renderWeigh();
+}
+function cycleWeight(id){ const it=weighOf(weighId).items.find(i=>i.id===id); it.weight=it.weight%3+1; save(db); renderWeigh(); }
+function removeItem(id){ const w=weighOf(weighId); w.items=w.items.filter(i=>i.id!==id); save(db); renderWeigh(); }
+function editItem(id){
+  const it=weighOf(weighId).items.find(i=>i.id===id); const t=prompt('Edit', it.text);
+  if(t && t.trim()){ it.text=t.trim(); save(db); renderWeigh(); }
+}
+
+/* ── wise counsel ── */
+const LEAN = { for:{label:'go for it', v:1}, caution:{label:'proceed with caution', v:.3}, mixed:{label:'mixed', v:0},
+               pray:{label:'pray more first', v:0}, against:{label:'hold off', v:-1} };
+const KNOWS = ['', 'knows a little', 'knows it well', 'knows it deeply'];
+function counselLean(w){
+  if(!w.counsel.length) return {score:0, label:'—'};
+  const wsum=w.counsel.reduce((a,c)=>a+c.knows,0);
+  const score=w.counsel.reduce((a,c)=>a+LEAN[c.lean].v*c.knows,0)/wsum;
+  const label = score>=.6?'for it' : score>=.2?'cautiously for it' : score>-.2?'mixed' : score>-.6?'cautiously against' : 'against it';
+  return {score,label};
+}
+function renderCounsel(w){
+  document.getElementById('wCounsel').innerHTML = w.counsel.length ? w.counsel.map(c=>`
+    <div class="card counsel">
+      <span class="x" style="float:right;cursor:pointer;color:var(--ink-faint)" onclick="removeCounsel('${c.id}')">✕</span>
+      <div class="who">${esc(c.who)}<span class="lean ${c.lean}">${LEAN[c.lean].label}</span></div>
+      <div class="meta">${esc(c.rel)} · ${KNOWS[c.knows]} · ${fmt(c.date)}</div>
+      ${c.said?`<div class="said">“${esc(c.said)}”</div>`:''}
+    </div>`).join('') : `<div class="empty" style="padding:8px 4px 14px">No counsel recorded yet.</div>`;
+}
+function addCounsel(){
+  const who=cWho.value.trim(); if(!who){ toast('Who gave the counsel?'); return; }
+  const w=weighOf(weighId);
+  const c={id:uid('c'), who, rel:cRel.value, knows:+cKnows.value, lean:cLean.value, said:cSaid.value.trim(), date:new Date().toISOString().slice(0,10)};
+  w.counsel.push(c);
+  if(cPoint.value.trim()) w.items.push({id:uid('i'), side:cPointSide.value, text:cPoint.value.trim(), weight:c.knows, source:'counsel: '+who});
+  ['cWho','cSaid','cPoint'].forEach(id=>document.getElementById(id).value='');
+  save(db); renderWeigh(); toast('Counsel recorded');
+}
+function removeCounsel(id){
+  if(!confirm('Remove this counsel?')) return;
+  const w=weighOf(weighId); w.counsel=w.counsel.filter(c=>c.id!==id); save(db); renderWeigh();
+}
+function askForCounsel(){
+  const w=weighOf(weighId), t=tally(w);
+  const top=list=>list.slice().sort((a,b)=>b.weight-a.weight).slice(0,3).map(i=>i.text.toLowerCase()).join('; ');
+  const text=`I'm trying to make a wise decision about "${w.title}" and I'd value your perspective.`+
+    (t.pros.length?` On the plus side: ${top(t.pros)}.`:'')+(t.cons.length?` What gives me pause: ${top(t.cons)}.`:'')+
+    ` What do you see that I might be missing? Is there anything that concerns you?`;
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast('Copied — send it to someone wise'),()=>prompt('Copy this message:', text));
+}
+
+/* ── insight engine ── */
+const STOP=new Set('about after again also always because been before being both could didnt does doesnt doing dont each even ever from going have having into just know like make many maybe more most much must need never only other over really said same should since some still sure take than that their them then there these they thing think this those though through time very want were what when where which while will with would your youre yourself really things okay'.split(' '));
+function themes(w){
+  const seen={};
+  w.counsel.forEach(c=>{
+    new Set((c.said||'').toLowerCase().replace(/[^a-z\s]/g,' ').split(/\s+/)
+      .filter(x=>x.length>=4 && !STOP.has(x)).map(x=>x.replace(/(ing|ed|es|s)$/,'')).filter(x=>x.length>=4))
+      .forEach(x=>(seen[x]=seen[x]||new Set()).add(c.id));
+  });
+  return Object.keys(seen).filter(k=>seen[k].size>=2).sort((a,b)=>seen[b].size-seen[a].size).slice(0,4);
+}
+function insightsFor(w){
+  const out=[], add=(tone,text)=>out.push({tone,text});
+  const t=tally(w), cl=counselLean(w), n=w.counsel.length;
+  if(!w.items.length) add('info','Start by running the idea through a filter or two — pros and cons will surface for you to keep or dismiss.');
+  else {
+    if(t.lean==='too close to call') add('info',`It’s close (${t.P} to ${t.C}). When the list is balanced, the list isn’t the decider — counsel, peace, and the gates usually are. A close call between two good options is often freedom, not a trap.`);
+    else if(t.diff>0) add('good',`Your weighing leans <b>yes</b> (${t.P} to ${t.C}).`);
+    else add('warn',`Your weighing leans <b>no</b> (${t.C} against ${t.P}). A clear no is also a faithful decision.`);
+    const heavy=w.items.filter(i=>i.weight===3);
+    if(heavy.length) add('info','Carrying the most weight: '+heavy.map(i=>`<b>${esc(i.text)}</b> (${i.side})`).join(', ')+'.');
+    const heavyCons=t.cons.filter(i=>i.weight===3);
+    if(t.diff>0 && heavyCons.length) add('warn',`One heavy con can outweigh many small pros. Is “${esc(heavyCons[0].text)}” a dealbreaker, or a cost you can carry with open eyes (Luke 14:28)?`);
+    if(t.pros.length && !t.cons.length) add('warn','No cons at all? Every real decision costs something. Ask someone honest what it would cost you.');
+  }
+  const fearful=t.cons.filter(i=>/afraid|fear|what if|people (will|might|would) think|embarrass|look like|disappoint|judg/i.test(i.text));
+  if(fearful.length) add('warn',`Some cons sound like fear rather than wisdom: “${esc(fearful[0].text)}”. “The fear of man bringeth a snare” (Prov 29:25) — name it, but don’t let it vote.`);
+
+  if(!n) add('warn','No counsel yet. “Without counsel purposes are disappointed: but in the multitude of counsellors they are established” (Prov 15:22). Who knows you — and this situation — well?');
+  else {
+    add(cl.score>=.2?'good':cl.score<=-.2?'warn':'info',`Weighted by how well each person knows the situation, your counsel leans <b>${cl.label}</b> (${n} voice${n===1?'':'s'}).`);
+    if(n===1) add('info','One voice so far. Try for at least one more — ideally someone who knows you deeply, and someone who knows this kind of decision.');
+    const leans=new Set(w.counsel.map(c=>c.lean));
+    if(n>=2 && leans.size===1) add('good',`Your counselors agree: ${LEAN[w.counsel[0].lean].label}. Agreement among people who love you is one of the clearest ways God gives direction.`);
+    if(leans.has('for') && leans.has('against')) add('info','Your counsel is divided. Ask the ones who differ what each of them sees — disagreement often points to the real question.');
+    const listSign=t.lean==='leans yes'?1:t.lean==='leans no'?-1:0, cSign=cl.score>=.2?1:cl.score<=-.2?-1:0;
+    if(listSign && cSign && listSign!==cSign) add('warn',`Your list ${t.lean}, but your counsel leans ${cl.label}. What do they see that your list doesn’t? “He that hearkeneth unto counsel is wise” (Prov 12:15).`);
+    const deep=w.counsel.filter(c=>c.knows===3 && (c.lean==='against'||c.lean==='caution'));
+    if(deep.length) add('warn',`${deep.map(c=>esc(c.who)).join(' and ')} — who know${deep.length===1?'s':''} this deeply — urged caution. Give that extra weight.`);
+    const th=themes(w);
+    if(th.length) add('info',`A theme running through more than one voice: <b>${th.map(esc).join(', ')}</b>. When several people independently bring up the same thing, pay attention.`);
+    const pray=w.counsel.filter(c=>c.lean==='pray');
+    if(pray.length) add('info',`${pray.length===1?esc(pray[0].who)+' said':pray.length+' people said'} to pray more first. If you wait, give it a decide-by date so waiting doesn’t become drifting.`);
+    if(n>=2 && new Set(w.counsel.map(c=>c.rel)).size===1) add('info',`All your counsel so far is from one kind of relationship (${esc(w.counsel[0].rel.toLowerCase())}). A different vantage point could help.`);
+  }
+  if(w.filters.length<2) add('info','Try another filter or two — 10 / 10 / 10 and Fear vs. faith are good ones for seeing past the moment.');
+  if(majorOf(w.major)) add('info',`This serves your <b>${esc(majorOf(w.major).name)}</b> decision. Keep its aim in view: “${esc(majorOf(w.major).aim)}”`);
+  if(w.items.length>=4 && n>=2) add('good','You’ve weighed this well. More information rarely brings more clarity from here — it usually takes courage. Take it to the gates.');
+  return out;
+}
+function renderInsight(w){
+  document.getElementById('wInsight').innerHTML = insightsFor(w).map(i=>`<div class="insight ${i.tone}">${i.text}</div>`).join('');
+}
+
+/* ── hand-off to the discern flow ── */
+function toGates(){
+  const w=weighOf(weighId);
+  weighId=null;
+  go('discern'); resetFlow();
+  fromWeigh=w.id;
+  dTitle.value=w.title; pickMajor(w.major||'');
+  const worst=w.items.filter(i=>i.side==='con').sort((a,b)=>b.weight-a.weight)[0];
+  if(worst) dFear.value='What gives me pause: '+worst.text;
+  // pre-answer the Counsel gate from what was recorded
+  const cl=counselLean(w);
+  const ans=!w.counsel.length?'Haven\'t asked':cl.score>=.6?'For it':cl.score<=-.6?'Against it':'Mixed';
+  document.querySelectorAll('#gates .gate[data-gate="counsel"] button').forEach(b=>{ if(b.textContent.trim()===ans) pickGate(b); });
+  toast('Brought from the scales — counsel gate pre-filled');
+}
+function setAsideWeigh(){
+  if(!confirm('Set this idea aside? It will be removed from your scales.')) return;
+  db.weighs=db.weighs.filter(w=>w.id!==weighId); save(db); closeWeigh(); toast('Set aside');
+}
+function weighSnapshot(id){
+  const w=id&&weighOf(id); if(!w) return {};
+  return { weighId:w.id, weighed:{ items:w.items.map(i=>({side:i.side,text:i.text,weight:i.weight})), counsel:w.counsel.map(c=>({...c})) } };
+}
+function weighSheetHTML(d){
+  if(!d.weighed) return '';
+  const t=tally(d.weighed);
+  const li=i=>`<div style="margin-top:3px">${'●'.repeat(i.weight)} ${esc(i.text)}</div>`;
+  return `<p class="quiet"><b>Weighed:</b> pros ${t.P} · cons ${t.C} — ${t.lean}</p>
+    <div class="pc quiet" style="margin-top:6px"><div><b style="color:var(--teal)">Pros</b>${t.pros.map(li).join('')||'—'}</div><div><b style="color:var(--rose)">Cons</b>${t.cons.map(li).join('')||'—'}</div></div>
+    ${d.weighed.counsel.length?`<p class="quiet" style="margin-top:10px"><b>Counsel (${counselLean(d.weighed).label}):</b></p>`+d.weighed.counsel.map(c=>`<p class="quiet" style="margin-top:4px">· ${esc(c.who)} <span class="lean ${c.lean}">${LEAN[c.lean].label}</span>${c.said?` — “${esc(c.said)}”`:''}</p>`).join(''):''}
+    <hr class="divider">`;
+}
+
+/* ── filter editor ── */
+let editingFilter=null;
+function openFilterEditor(id){
+  editingFilter=id||null;
+  const f=id?db.filters.find(x=>x.id===id):{name:'',q:'',pros:[],cons:[]};
+  fEdTitle.textContent=id?'Edit filter':'Make a filter';
+  fName.value=f.name; fQ.value=f.q; fPros.value=f.pros.join('\n'); fCons.value=f.cons.join('\n');
+  fDelete.style.display=id?'block':'none';
+  filterOverlay.classList.add('open');
+}
+function closeFilterEditor(){ filterOverlay.classList.remove('open'); }
+function saveFilter(){
+  const lines=v=>v.split('\n').map(s=>s.trim()).filter(Boolean);
+  const f={name:fName.value.trim(), q:fQ.value.trim(), pros:lines(fPros.value), cons:lines(fCons.value)};
+  if(!f.name){ toast('Give the filter a name'); return; }
+  if(!f.pros.length && !f.cons.length){ toast('Add at least one pro or con'); return; }
+  if(editingFilter) Object.assign(db.filters.find(x=>x.id===editingFilter), f);
+  else db.filters.push({id:uid('c'), ...f});
+  save(db); closeFilterEditor(); renderWeighHome(); toast('Filter saved');
+}
+function deleteFilter(){
+  if(!confirm('Delete this filter?')) return;
+  db.filters=db.filters.filter(x=>x.id!==editingFilter);
+  db.weighs.forEach(w=>w.filters=w.filters.filter(x=>x!==editingFilter));
+  save(db); closeFilterEditor(); renderWeighHome();
 }
 
 /* ───────── init ───────── */

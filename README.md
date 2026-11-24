@@ -6,13 +6,14 @@ An installable PWA for making decisions quickly and faithfully, built around one
 
 The home screen is a circle. At the fixed center is God (and who you are in Him — editable as "My Center"). Around it runs the cycle every decision moves through:
 
-**Discern → Decide → Articulate → Walk → Review**
+**(Weigh →) Discern → Decide → Articulate → Walk → Review**
 
 Active commitments orbit the center as dots. They rotate around the center; the center never rotates around them.
 
 ## The four parts
 
 - **Circle (home)** — your center creed, orbiting commitments, and any reviews that are due.
+- **Weigh** — for ideas you aren't ready to decide yet. Name the idea and run it through **filters** (Scripture, Stewardship, Calling & gifts, People affected, 10/10/10, Fear vs. faith, Motives & peace, This season, and one for each major decision). Each filter suggests pros and cons to keep, flip, or dismiss, and categories like work, moving, money, relationships, church, and school are picked up from your wording automatically. You can make your own filters too. Weigh each pro and con (●○○ to ●●●) and watch the scale. Record **wise counsel**: who it came from, how well they know the situation, which way they lean, and what they said. Any point they raise can go straight onto the list. **Insight** reads it all back to you: which way the list leans, the heaviest items, cons that sound like fear rather than wisdom, where counsel and your list disagree, themes several counselors raised, and caution from people who know the situation deeply. When you're ready, **Take it to the gates** carries everything into Discern, with the Counsel gate already filled in.
 - **Discern** — a one-sitting decision flow with a visible timer (clarity loves a deadline): name the decision, name the fear, pass it through the four gates (Scripture, Wisdom, Counsel, Peace), then decide — commit, decline (also a decision), or set a decide-by date. Waiting always gets a date.
 - **Articulate** — every decision ends in a conviction statement: *"Because I believe…, I have decided to…, and I hold it with open hands, which means…"* Copy it when people question you — conviction with humility, not confusion.
 - **Commitments** — everything you've sealed, with review dates, a walk journal, and three honorable endings: **Held**, **Fulfilled**, or **Released to God**. Being redirected is not the same as being wrong; a commitment released in obedience is completed faithfulness, not a failed decision.
