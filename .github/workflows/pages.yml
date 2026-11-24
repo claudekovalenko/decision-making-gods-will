@@ -2,7 +2,7 @@ name: Deploy to GitHub Pages
 
 on:
   push:
-    branches: [claude/pwc-decision-making-app-8323tc, claude/priorities-vision-stewardship-sxylas]
+    branches: [claude/pwc-decision-making-app-8323tc, claude/priorities-vision-stewardship-sxylas, claude/epic-cray-3zd55c]
   workflow_dispatch:
 
 permissions:
