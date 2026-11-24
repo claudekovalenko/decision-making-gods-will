@@ -464,13 +464,43 @@
   </div>
 </div>
 
+<!-- in-page dialog -->
+<div class="overlay" id="askOverlay" style="z-index:150">
+  <div class="sheet">
+    <p class="prompt serif" id="askMsg" style="white-space:pre-line"></p>
+    <textarea id="askInput" style="min-height:60px"></textarea>
+    <div class="btn-row">
+      <button class="ghost" id="askCancel">Cancel</button>
+      <button class="primary" id="askOk">OK</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
 /* ───────── storage ───────── */
 const DB_KEY = 'centered.v1';
-const load = () => JSON.parse(localStorage.getItem(DB_KEY) || '{"center":null,"decisions":[]}');
-const save = (db) => localStorage.setItem(DB_KEY, JSON.stringify(db));
+const load = () => { try { return JSON.parse(localStorage.getItem(DB_KEY) || 'null') || {center:null,decisions:[]}; } catch(e){ return {center:null,decisions:[]}; } };
+const save = (db) => { try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch(e){} };
+
+/* In-page dialogs (browser prompt/confirm are blocked in some app views). */
+function ask(msg, value, opts){
+  opts=opts||{};
+  return new Promise(res=>{
+    const ov=document.getElementById('askOverlay');
+    document.getElementById('askMsg').textContent=msg;
+    const inp=document.getElementById('askInput');
+    inp.style.display=opts.confirm?'none':'block';
+    inp.value=value||'';
+    document.getElementById('askOk').textContent=opts.ok||'OK';
+    ov.classList.add('open'); if(!opts.confirm) setTimeout(()=>inp.focus(),50);
+    const done=v=>{ ov.classList.remove('open'); document.getElementById('askOk').onclick=null; document.getElementById('askCancel').onclick=null; res(v); };
+    document.getElementById('askOk').onclick=()=>done(opts.confirm?true:inp.value);
+    document.getElementById('askCancel').onclick=()=>done(opts.confirm?false:null);
+  });
+}
+const askConfirm = (msg, ok) => ask(msg, '', {confirm:true, ok:ok||'Yes'});
 let db = load();
 if (!db.center) db.center = {
   god: 'A good Father who gives wisdom generously and without reproach',
@@ -605,9 +635,9 @@ function renderMajorPick(){
     `<button type="button" class="${o.id===chosenMajor?'selected':''}" onclick="pickMajor('${o.id}')">${esc(o.label)}</button>`).join('');
 }
 function pickMajor(id){ chosenMajor=id; renderMajorPick(); }
-function editMajor(id){
+async function editMajor(id){
   const m=majorOf(id); if(!m) return;
-  const aim=prompt('What is the '+m.name.toLowerCase()+' decision about, in one sentence?', m.aim);
+  const aim=await ask('What is the '+m.name.toLowerCase()+' decision about, in one sentence?', m.aim);
   if(aim===null) return;
   m.aim=aim.trim()||m.aim; save(db); renderCircle(); toast('Saved');
 }
@@ -820,8 +850,8 @@ function setStatus(s){
   d.status=s; save(db); openSheet(sheetId);
   toast(s==='fulfilled'?'Well done, faithful servant':'Released with honor');
 }
-function releaseFlow(){
-  const why=prompt('Releasing this back to God is obedience, not failure.\n\nWhat is God redirecting, and what did you learn?');
+async function releaseFlow(){
+  const why=await ask('Releasing this back to God is obedience, not failure.\n\nWhat is God redirecting, and what did you learn?');
   if(why===null) return;
   const d=db.decisions.find(x=>x.id===sheetId);
   if(why.trim()) d.journal.push({date:new Date().toISOString().slice(0,10), note:'RELEASED — '+why.trim()});
@@ -952,8 +982,8 @@ function renderWeigh(){
     </select>`;
   renderWeighFilters(w); renderItems(w); renderCounsel(w); renderInsight(w);
 }
-function renameWeigh(){
-  const w=weighOf(weighId); const t=prompt('Rename this idea', w.title);
+async function renameWeigh(){
+  const w=weighOf(weighId); const t=await ask('Rename this idea', w.title);
   if(t && t.trim()){ w.title=t.trim(); save(db); renderWeigh(); }
 }
 function setWeighMajor(v){ const w=weighOf(weighId); w.major=v; save(db); renderWeigh(); }
@@ -1021,8 +1051,8 @@ function addOwnItem(){
 }
 function cycleWeight(id){ const it=weighOf(weighId).items.find(i=>i.id===id); it.weight=it.weight%3+1; save(db); renderWeigh(); }
 function removeItem(id){ const w=weighOf(weighId); w.items=w.items.filter(i=>i.id!==id); save(db); renderWeigh(); }
-function editItem(id){
-  const it=weighOf(weighId).items.find(i=>i.id===id); const t=prompt('Edit', it.text);
+async function editItem(id){
+  const it=weighOf(weighId).items.find(i=>i.id===id); const t=await ask('Edit', it.text);
   if(t && t.trim()){ it.text=t.trim(); save(db); renderWeigh(); }
 }
 
@@ -1055,8 +1085,8 @@ function addCounsel(){
   ['cWho','cSaid','cPoint'].forEach(id=>document.getElementById(id).value='');
   save(db); renderWeigh(); toast('Counsel recorded');
 }
-function removeCounsel(id){
-  if(!confirm('Remove this counsel?')) return;
+async function removeCounsel(id){
+  if(!await askConfirm('Remove this counsel?','Remove')) return;
   const w=weighOf(weighId); w.counsel=w.counsel.filter(c=>c.id!==id); save(db); renderWeigh();
 }
 function askForCounsel(){
@@ -1065,8 +1095,10 @@ function askForCounsel(){
   const text=`I'm trying to make a wise decision about "${w.title}" and I'd value your perspective.`+
     (t.pros.length?` On the plus side: ${top(t.pros)}.`:'')+(t.cons.length?` What gives me pause: ${top(t.cons)}.`:'')+
     ` What do you see that I might be missing? Is there anything that concerns you?`;
-  if(navigator.share) navigator.share({text}).catch(()=>{});
-  else (navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject()).then(()=>toast('Copied — send it to someone wise'),()=>prompt('Copy this message:', text));
+  const copy=()=>(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject())
+    .then(()=>toast('Copied — send it to someone wise'),()=>ask('Copy this message and send it:', text, {ok:'Done'}));
+  if(navigator.share) navigator.share({text}).catch(e=>{ if(!e||e.name!=='AbortError') copy(); });
+  else copy();
 }
 
 /* ── insight engine ── */
@@ -1138,8 +1170,8 @@ function toGates(){
   document.querySelectorAll('#gates .gate[data-gate="counsel"] button').forEach(b=>{ if(b.textContent.trim()===ans) pickGate(b); });
   toast('Brought from the scales — counsel gate pre-filled');
 }
-function setAsideWeigh(){
-  if(!confirm('Set this idea aside? It will be removed from your scales.')) return;
+async function setAsideWeigh(){
+  if(!await askConfirm('Set this idea aside? It will be removed from your scales.')) return;
   db.weighs=db.weighs.filter(w=>w.id!==weighId); save(db); closeWeigh(); toast('Set aside');
 }
 function weighSnapshot(id){
@@ -1176,8 +1208,8 @@ function saveFilter(){
   else db.filters.push({id:uid('c'), ...f});
   save(db); closeFilterEditor(); renderWeighHome(); toast('Filter saved');
 }
-function deleteFilter(){
-  if(!confirm('Delete this filter?')) return;
+async function deleteFilter(){
+  if(!await askConfirm('Delete this filter?','Delete')) return;
   db.filters=db.filters.filter(x=>x.id!==editingFilter);
   db.weighs.forEach(w=>w.filters=w.filters.filter(x=>x!==editingFilter));
   save(db); closeFilterEditor(); renderWeighHome();
