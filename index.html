@@ -17,12 +17,12 @@
     font-size:16px;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{height:100%;}
+  html,body{min-height:100%;}
   body{
     background:var(--bg); color:var(--ink);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",sans-serif;
     line-height:1.55;
-    padding-bottom:calc(76px + env(safe-area-inset-bottom));
+    padding-bottom:calc(96px + env(safe-area-inset-bottom));
   }
   .serif{font-family:Georgia,"Times New Roman",serif;}
   header{
@@ -150,8 +150,8 @@
   }
   .toast.show{opacity:1;}
 
-  .majors{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-  @media (max-width:420px){ .majors{grid-template-columns:1fr;} }
+  .majors{display:grid; grid-template-columns:repeat(3,1fr); gap:10px;}
+  @media (max-width:600px){ .majors{grid-template-columns:1fr;} }
   .major{background:var(--card); border:1px solid var(--line); border-top:3px solid var(--gold); border-radius:var(--radius); padding:14px;}
   .major .kicker{font-size:.66rem; letter-spacing:.18em; color:var(--gold); text-transform:uppercase;}
   .major .name{font-size:1.1rem; font-weight:600; margin-top:4px;}
@@ -213,6 +213,19 @@
   .insight.warn{border-left-color:var(--rose);}
   .insight.info{border-left-color:var(--gold);}
   .two{display:grid; grid-template-columns:1fr 1fr; gap:8px;}
+  .opt-row{display:flex; align-items:center; gap:10px; background:var(--card); border:1px solid var(--line); border-radius:10px; padding:9px 12px; margin-bottom:6px;}
+  .opt-row .txt{flex:1; cursor:pointer; font-weight:600;}
+  .opt-row .x{cursor:pointer; color:var(--ink-faint);}
+  .opt-letter{display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%; background:var(--card2); border:1px solid var(--gold); color:var(--gold-soft); font-size:.72rem; font-weight:700; flex:none;}
+  .opt-tabs{display:flex; gap:6px; overflow-x:auto; margin:0 0 10px; padding-bottom:2px;}
+  .opt-tabs button{flex:none; max-width:220px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; background:var(--card); border:1px solid var(--line); color:var(--ink-dim); border-radius:10px; padding:8px 12px; font-size:.84rem; cursor:pointer; font-family:inherit;}
+  .opt-tabs button.on{border-color:var(--gold); color:var(--ink); background:#26314a;}
+  .opt-tabs button b{color:var(--gold-soft); margin-right:4px;}
+  .compare{display:grid; gap:8px; margin-top:6px;}
+  .cmp{background:var(--card); border:1px solid var(--line); border-radius:var(--radius); padding:12px 14px;}
+  .cmp.lead{border-color:var(--gold);}
+  .cmp-head{display:flex; align-items:center; gap:8px; flex-wrap:wrap;}
+  .cmp-nums{display:flex; flex-wrap:wrap; gap:6px 16px; font-size:.8rem; color:var(--ink-dim); margin-top:6px; font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -233,7 +246,7 @@
       <span class="edit-link" onclick="openCenterEditor()">Edit my center ›</span>
     </div>
 
-    <h2>The two major decisions <small>everything else orbits these</small></h2>
+    <h2>The major decisions <small>everything else orbits these</small></h2>
     <div class="majors" id="majorList"></div>
     <p class="guided serif">Both guided and supported by God’s will — not my timing, not my fear.</p>
 
@@ -251,8 +264,8 @@
   <section id="view-weigh" class="view">
     <div id="weighHome">
       <p class="prompt serif">Weigh it before you decide it.</p>
-      <p class="hint">Name an idea, run it through filters, and pros and cons surface on their own. Weigh them, gather wise counsel, and see what it all adds up to. Take as many days here as you need — then take it to the gates in one sitting.</p>
-      <input type="text" id="wNewTitle" placeholder="What are you weighing? e.g., Take the new job and move to Austin">
+      <p class="hint">Name the decision — if it's between options, write them with “or” (e.g., “Austin or Denver”) and they'll be split out for you. Run each through filters, and pros and cons surface on their own. Weigh them, gather wise counsel, and see what it all adds up to. Take as many days here as you need — then take it to the gates in one sitting.</p>
+      <input type="text" id="wNewTitle" placeholder="e.g., Take the job in Austin or stay in Dallas">
       <button class="primary" onclick="newWeigh()">Start weighing</button>
       <h2>Weighing now</h2>
       <div id="weighList"></div>
@@ -266,11 +279,20 @@
       <h2 class="serif" style="font-size:1.25rem; margin-top:4px" id="wTitle"></h2>
       <div class="meta quiet" id="wMeta"></div>
 
-      <h2>1 · Run it through filters <small>tap a filter to surface pros &amp; cons</small></h2>
+      <h2>1 · Your options <small>tap one to rename it</small></h2>
+      <div id="wOptions"></div>
+      <div class="add-row">
+        <input type="text" id="wOptText" placeholder="Add an option, e.g., Stay where I am">
+        <button onclick="addOption()">Add</button>
+      </div>
+
+      <h2>2 · Run it through filters <small>tap a filter to surface pros &amp; cons</small></h2>
+      <div id="wTabsFilters"></div>
       <div class="chips" id="wFilters"></div>
       <div id="wSuggest"></div>
 
-      <h2>2 · Pros &amp; cons <small>tap ●○○ to set how much it weighs</small></h2>
+      <h2>3 · Pros &amp; cons <small>tap ●○○ to set how much it weighs</small></h2>
+      <div id="wTabsItems"></div>
       <div class="scale" id="wScale"></div>
       <div class="pc">
         <div class="pros"><h3>Pros</h3><div id="wPros"></div></div>
@@ -282,7 +304,7 @@
         <button onclick="addOwnItem()">Add</button>
       </div>
 
-      <h2>3 · Wise counsel <small>“in the multitude of counsellors there is safety”</small></h2>
+      <h2>4 · Wise counsel <small>“in the multitude of counsellors there is safety”</small></h2>
       <div id="wCounsel"></div>
       <div class="card">
         <div class="two">
@@ -293,10 +315,11 @@
               <option>Spouse / significant other</option><option>Expert in this area</option><option>Someone affected by this</option>
             </select></div>
         </div>
+        <div id="cOptWrap"><label class="field">Which option are they speaking to?</label><select id="cOpt"></select></div>
         <div class="two">
           <div><label class="field">How well they know this situation</label>
             <select id="cKnows"><option value="1">A little</option><option value="2" selected>Well</option><option value="3">Deeply</option></select></div>
-          <div><label class="field">Their lean</label>
+          <div><label class="field" id="cLeanLabel">Their lean</label>
             <select id="cLean">
               <option value="for">Go for it</option><option value="caution">Proceed with caution</option>
               <option value="mixed">Mixed / could go either way</option><option value="pray">Pray more first</option>
@@ -314,11 +337,11 @@
       </div>
       <button class="ghost" onclick="askForCounsel()">Copy a message asking someone for counsel</button>
 
-      <h2>4 · Insight <small>what it all adds up to</small></h2>
+      <h2>5 · Insight <small>what it all adds up to</small></h2>
       <div id="wInsight"></div>
 
-      <button class="primary" onclick="toGates()">Take it to the gates →</button>
-      <button class="danger" onclick="setAsideWeigh()">Set this idea aside</button>
+      <div id="wCompare"></div>
+      <button class="danger" onclick="setAsideWeigh()">Set this decision aside</button>
     </div>
   </section>
 
@@ -512,9 +535,11 @@ if (!db.center) db.center = {
 const MAJOR_DEFAULTS = [
   { id:'church', name:'Church', aim:'Planted in a church I\u2019m comfortable in, where it feels like family.',
     link:'../church-finder/', linkText:'Open the church finder ›' },
-  { id:'marriage', name:'Marriage', aim:'Preparing to be a husband who looks like Christ, and recognising the wife God has for me.' }
+  { id:'marriage', name:'Marriage', aim:'Preparing to be a husband who looks like Christ, and recognising the wife God has for me.' },
+  { id:'family', name:'Family', aim:'Loving and honoring my family well, and building toward a home that serves the Lord.' }
 ];
 if (!Array.isArray(db.majors)) db.majors = MAJOR_DEFAULTS.map(m=>({id:m.id, name:m.name, aim:m.aim}));
+if (!db.familyAdded){ if(!db.majors.find(m=>m.id==='family')) db.majors.push({id:'family', name:'Family', aim:MAJOR_DEFAULTS[2].aim}); db.familyAdded=true; }
 const majorOf = id => db.majors.find(m=>m.id===id);
 const majorLink = id => MAJOR_DEFAULTS.find(m=>m.id===id) || {};
 let chosenMajor = '';
@@ -545,7 +570,7 @@ function renderCircle(){
   const held=db.decisions.filter(d=>d.status==='held');
   const R1=145, R2=96, CX=160, CY=160;
   let dots='';
-  const MAJOR_ANGLE={church:180, marriage:0};
+  const MAJOR_ANGLE={church:180, marriage:0, family:90};
   const majors=db.majors.map(m=>{
     const a=(MAJOR_ANGLE[m.id]??90)*Math.PI/180;
     const x=CX+R2*Math.cos(a), y=CY+R2*Math.sin(a);
@@ -563,7 +588,7 @@ function renderCircle(){
         const off=(i%2?1:-1)*38*(Math.floor(i/2)+1);
         angleFor[d.id]=MAJOR_ANGLE[k]+off;
       } else {
-        const free=[-90,90,-60,-120,60,120];
+        const free=[-90,-60,-120,-30,-150,40];
         angleFor[d.id]=i<free.length?free[i]:-90+i*(360/list.length);
       }
     });
@@ -667,7 +692,7 @@ let flowStart=null, timerInt=null, chosenDecision=null, fromWeigh=null;
 function resetFlow(){
   document.querySelectorAll('#view-discern .step').forEach((s,i)=>s.classList.toggle('active',i===0));
   ['dTitle','dFear','dWaitingOn','aBelief','aDecision','aOpen'].forEach(id=>document.getElementById(id).value='');
-  chosenDecision=null; fromWeigh=null;
+  chosenDecision=null; fromWeigh=null; fromOpt=null;
   chosenMajor=''; renderMajorPick();
   document.getElementById('waitBox').style.display='none';
   document.querySelectorAll('#view-discern .gate button').forEach(b=>b.classList.remove('selected'));
@@ -727,8 +752,8 @@ function summarizeGates(){
   else msg='No gate is closed. If you\'re still hesitating, ask whether you\'re waiting on God — or on people\'s approval.';
   const w=fromWeigh&&weighOf(fromWeigh);
   if(w){
-    const t=tally(w), c=counselLean(w);
-    msg+=` Your weighing: pros ${t.P} vs cons ${t.C} (${t.lean})`+(w.counsel.length?`; ${w.counsel.length} counselor${w.counsel.length===1?'':'s'} leaning ${c.label}.`:'; no counsel recorded.');
+    const t=tally(w,fromOpt), c=counselLean(w,fromOpt);
+    msg+=` Your weighing: pros ${t.P} vs cons ${t.C} (${t.lean})`+(c.n?`; ${c.n} counselor${c.n===1?'':'s'} leaning ${c.label}.`:'; no counsel recorded on this option.');
   }
   document.getElementById('gateSummary').textContent=msg;
 }
@@ -871,6 +896,9 @@ if (!Array.isArray(db.filters)) db.filters = [];   // user-made filters
 
 /* Built-in filters: lenses any idea can be run through. */
 const BUILTIN_FILTERS = [
+  { id:'f-family', name:'Family', q:'How does this affect my family — parents, siblings, and the family I hope to build?',
+    pros:['Honors my father and mother (Eph 6:2)','Draws my family closer together','Prepares me to lead a home well someday','My family would be blessed by this'],
+    cons:['Would strain a family relationship','Leaves family without help they rely on','My family would carry a real cost','Makes it harder to be present for family'] },
   { id:'f-scripture', name:'Scripture', q:'Does God’s word speak to this — commend it, warn against it, or leave me free?',
     pros:['Fits what Scripture commends (love, faithfulness, generosity, integrity)','Helps me love God and my neighbor more fully','I’m free in Christ to choose this'],
     cons:['Brushes up against something Scripture warns about','Could feed pride, greed, or self-reliance','Would make it harder to keep a promise I’ve already made'] },
@@ -899,6 +927,9 @@ const BUILTIN_FILTERS = [
 
 /* Categories detected automatically from the idea's wording. */
 const CATEGORIES = [
+  { id:'family', name:'Family', re:/\b(family|parent|mom|dad|mother|father|brother|sister|sibling|kids|children|son|daughter|grandm|grandp|aunt|uncle|cousin|in-law|home)/i,
+    pros:['Honors my parents (Eph 6:2)','Strengthens my relationships with family','Builds toward the home I hope to have','Lets me be present when my family needs me'],
+    cons:['Strains a relationship with someone in my family','Takes me far from family who need me','My family has real concerns I haven\u2019t addressed','Puts my family\u2019s needs behind my wants'] },
   { id:'work', name:'Work & career', re:/\b(job|career|role|position|offer|promot|business|work|boss|hire|hiring|quit|resign|salary|company|startup|internship)/i,
     pros:['Better income or stability','Room to grow skills and responsibility','Work that matters to me'],
     cons:['Less time for family, church, or rest','Leaving people or a team I’m committed to','Unknown culture or leadership'] },
@@ -919,7 +950,7 @@ const CATEGORIES = [
     cons:['Time and tuition cost','Delays other things this season needs'] }
 ];
 
-const majorFilters = () => db.majors.map(m=>({
+const majorFilters = () => db.majors.filter(m=>m.id!=='family').map(m=>({
   id:'f-major-'+m.id, name:'Serves '+m.name, q:`Does this move me toward my ${m.name.toLowerCase()} decision — “${m.aim}”`,
   pros:['Moves me toward: '+m.aim, `Makes room to invest in ${m.name.toLowerCase()}`],
   cons:[`Pulls time or focus away from ${m.name.toLowerCase()}`, `Could make the ${m.name.toLowerCase()} decision harder later`]
@@ -932,13 +963,34 @@ const weighOf = id => db.weighs.find(w=>w.id===id);
 let weighId = null;
 const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
 
+/* ── options: most decisions are between paths ── */
+function migrateWeigh(w){
+  if(!Array.isArray(w.options) || !w.options.length){
+    w.options=[{id:'o1', name:w.title}];
+    w.items.forEach(i=>{ if(!i.opt) i.opt='o1'; });
+    w.counsel.forEach(c=>{ if(!c.opt) c.opt='o1'; });
+  }
+  if(!w.options.find(o=>o.id===w.active)) w.active=w.options[0].id;
+  return w;
+}
+db.weighs.forEach(migrateWeigh);
+const optOf = (w,id) => w.options.find(o=>o.id===id);
+const multi = w => w.options.length>1;
+const cap = s => s.charAt(0).toUpperCase()+s.slice(1);
+/* "Austin or Denver", "stay vs. go" → separate options */
+function splitOptions(title){
+  const parts=title.replace(/\?$/,'').split(/\s+(?:or|vs\.?|versus)\s+|\s*\/\s*/i).map(s=>s.trim()).filter(Boolean);
+  return parts.length>1 && parts.length<=5 ? parts.map(cap) : [title];
+}
+
 /* ── home of the weigh tab ── */
 function weighCard(w){
-  const t=tally(w);
+  const opts=multi(w) ? w.options.map(o=>esc(o.name)).join(' · ') : '';
+  const t=tally(w, w.options[0].id);
   return `<div class="card tappable" onclick="openWeigh('${w.id}')">
     <span class="badge fulfilled">weighing</span>
     <div class="title">${esc(w.title)}${majorOf(w.major)?`<span class="serves-tag">· ${esc(majorOf(w.major).name)}</span>`:''}</div>
-    <div class="meta">${w.items.length?`${t.pros.length} pros · ${t.cons.length} cons · ${t.lean}`:'No pros or cons yet'} · ${w.counsel.length} counsel</div>
+    <div class="meta">${multi(w)?`${w.options.length} options: ${opts}`:(w.items.length?`${t.pros.length} pros · ${t.cons.length} cons · ${t.lean}`:'No pros or cons yet')} · ${w.counsel.length} counsel</div>
   </div>`;
 }
 function renderWeighHome(){
@@ -951,16 +1003,18 @@ function renderWeighHome(){
   document.getElementById('filterManage').innerHTML = `<div class="chips">` +
     BUILTIN_FILTERS.concat(majorFilters()).map(f=>`<span class="chip auto" title="${esc(f.q)}">${esc(f.name)}</span>`).join('') +
     db.filters.map(f=>`<button class="chip on" onclick="openFilterEditor('${f.id}')">${esc(f.name)} ✎</button>`).join('') +
-    `</div><p class="hint" style="margin-top:8px">Dashed filters are built in. Your own filters are gold — tap one to edit it. Categories like work, moving, money, relationships, church, and school are detected from your wording automatically.</p>`;
+    `</div><p class="hint" style="margin-top:8px">Dashed filters are built in. Your own filters are gold — tap one to edit it. Categories like work, family, moving, money, relationships, church, and school are detected from your wording automatically.</p>`;
 }
 function newWeigh(title, major){
   title = (title ?? document.getElementById('wNewTitle').value).trim();
-  if(!title){ toast('Name the idea first'); return; }
+  if(!title){ toast('Name the decision first'); return; }
+  const options=splitOptions(title).map((name,i)=>({id:'o'+(i+1), name}));
   const w={ id:uid('w'), title, major:major||'', created:new Date().toISOString().slice(0,10),
-    status:'weighing', filters:[], dismissed:[], items:[], counsel:[] };
+    status:'weighing', filters:[], dismissed:[], items:[], counsel:[], options, active:'o1' };
   db.weighs.unshift(w); save(db);
   document.getElementById('wNewTitle').value='';
   openWeigh(w.id);
+  if(options.length>1) toast(`Found ${options.length} options in your wording`);
 }
 function openWeigh(id){ weighId=id; go('weigh'); }
 function closeWeigh(){ weighId=null; renderWeighHome(); window.scrollTo(0,0); }
@@ -974,27 +1028,66 @@ function weighFromFlow(){
 /* ── the workspace ── */
 function renderWeigh(){
   const w=weighOf(weighId); if(!w){ closeWeigh(); return; }
+  migrateWeigh(w);
   document.getElementById('wTitle').innerHTML = `${esc(w.title)} <span class="edit-link" style="font-size:.78rem;color:var(--teal);cursor:pointer" onclick="renameWeigh()">rename</span>`;
   const majorOpts = [{id:'',name:'nothing in particular'}].concat(db.majors);
   document.getElementById('wMeta').innerHTML = `Started ${fmt(w.created)} · serves:
     <select style="width:auto;padding:4px 8px;font-size:.82rem" onchange="setWeighMajor(this.value)">
       ${majorOpts.map(m=>`<option value="${m.id}" ${m.id===w.major?'selected':''}>${esc(m.name)}</option>`).join('')}
     </select>`;
-  renderWeighFilters(w); renderItems(w); renderCounsel(w); renderInsight(w);
+  renderOptions(w); renderWeighFilters(w); renderItems(w); renderCounsel(w); renderCompare(w); renderInsight(w);
 }
 async function renameWeigh(){
-  const w=weighOf(weighId); const t=await ask('Rename this idea', w.title);
-  if(t && t.trim()){ w.title=t.trim(); save(db); renderWeigh(); }
+  const w=weighOf(weighId); const t=await ask('Rename this decision', w.title);
+  if(t && t.trim()){ w.title=t.trim(); if(!multi(w)) w.options[0].name=w.title; save(db); renderWeigh(); }
 }
 function setWeighMajor(v){ const w=weighOf(weighId); w.major=v; save(db); renderWeigh(); }
 
+function renderOptions(w){
+  document.getElementById('wOptions').innerHTML = w.options.map((o,i)=>`
+    <div class="opt-row">
+      <span class="opt-letter">${String.fromCharCode(65+i)}</span>
+      <span class="txt" onclick="renameOption('${o.id}')" title="Tap to rename">${esc(o.name)}</span>
+      ${multi(w)?`<span class="x" title="Remove this option" onclick="removeOption('${o.id}')">✕</span>`:''}
+    </div>`).join('') +
+    (multi(w) ? '' : `<p class="hint" style="margin-top:6px">Right now this is a yes-or-no decision. Is there another path? Add it below — “stay where I am” counts as an option too.</p>`);
+  // tabs that choose which option the filters, list and counsel form are working on
+  const tabs = multi(w) ? `<div class="opt-tabs">${w.options.map((o,i)=>`<button class="${o.id===w.active?'on':''}" onclick="setActiveOpt('${o.id}')"><b>${String.fromCharCode(65+i)}</b> ${esc(o.name)}</button>`).join('')}</div>` : '';
+  document.getElementById('wTabsFilters').innerHTML = tabs;
+  document.getElementById('wTabsItems').innerHTML = tabs;
+  document.getElementById('cOptWrap').style.display = multi(w) ? 'block' : 'none';
+  document.getElementById('cOpt').innerHTML = w.options.map((o,i)=>`<option value="${o.id}" ${o.id===w.active?'selected':''}>${String.fromCharCode(65+i)} · ${esc(o.name)}</option>`).join('');
+  document.getElementById('cLeanLabel').textContent = multi(w) ? 'Their lean on that option' : 'Their lean';
+}
+function addOption(){
+  const el=document.getElementById('wOptText'), name=el.value.trim(); if(!name) return;
+  const w=weighOf(weighId);
+  const o={id:uid('o'), name:cap(name)};
+  w.options.push(o); w.active=o.id; el.value='';
+  save(db); renderWeigh(); toast('Option added — now weigh it');
+}
+async function renameOption(id){
+  const w=weighOf(weighId), o=optOf(w,id); const t=await ask('Name this option', o.name);
+  if(t && t.trim()){ o.name=t.trim(); save(db); renderWeigh(); }
+}
+async function removeOption(id){
+  const w=weighOf(weighId), o=optOf(w,id);
+  if(!await askConfirm(`Remove “${o.name}” and its pros, cons, and counsel?`,'Remove')) return;
+  w.options=w.options.filter(x=>x.id!==id);
+  w.items=w.items.filter(i=>i.opt!==id); w.counsel=w.counsel.filter(c=>c.opt!==id);
+  migrateWeigh(w); save(db); renderWeigh();
+}
+function setActiveOpt(id){ const w=weighOf(weighId); w.active=id; save(db); renderWeigh(); }
+
 function renderWeighFilters(w){
-  const auto=detectCategories(w.title);
+  const auto=detectCategories(w.title+' '+w.options.map(o=>o.name).join(' '));
   document.getElementById('wFilters').innerHTML =
     auto.map(c=>`<span class="chip on auto" title="Detected from your wording">✦ ${esc(c.name)}</span>`).join('') +
     allFilters().map(f=>`<button class="chip ${w.filters.includes(f.id)?'on':''}" onclick="toggleFilter('${f.id}')">${esc(f.name)}</button>`).join('');
-  // suggestions from detected categories + applied filters
-  const have=new Set(w.items.map(i=>i.text.toLowerCase()).concat(w.dismissed.map(t=>t.toLowerCase())));
+  const optItems=w.items.filter(i=>i.opt===w.active);
+  const have=new Set(optItems.map(i=>i.text.toLowerCase()).concat(
+    w.dismissed.filter(d=>d.startsWith(w.active+'|')).map(d=>d.slice(w.active.length+1).toLowerCase()),
+    w.dismissed.filter(d=>!d.includes('|')).map(d=>d.toLowerCase())));
   const groups=auto.concat(w.filters.map(filterById).filter(Boolean)).map(f=>{
     const sug=[].concat(f.pros.map((t,i)=>({side:'pro',t,i})), f.cons.map((t,i)=>({side:'con',t,i})))
       .filter(s=>!have.has(s.t.toLowerCase()));
@@ -1005,8 +1098,9 @@ function renderWeighFilters(w){
         <button title="Add it to the other side" onclick="keepSug('${f.id}','${s.side}',${s.i},true)">⇄</button>
         <button title="Doesn't apply" onclick="dismissSug('${f.id}','${s.side}',${s.i})">✕</button></div>`).join('') + `</div>`;
   }).join('');
-  document.getElementById('wSuggest').innerHTML = groups ||
-    `<p class="hint" style="margin-top:10px">${w.filters.length||auto.length?'All suggestions handled. Try another filter.':'Tap a filter above. Keep the pros and cons that are true for you, flip ones that cut the other way, and dismiss the rest.'}</p>`;
+  const forOpt = multi(w) ? `<p class="hint" style="margin-top:10px">Suggestions below are for <b style="color:var(--gold-soft)">${esc(optOf(w,w.active).name)}</b>. Switch options above to weigh the others.</p>` : '';
+  document.getElementById('wSuggest').innerHTML = groups ? forOpt+groups :
+    `<p class="hint" style="margin-top:10px">${w.filters.length||auto.length?'All suggestions handled for this option. Try another filter.':'Tap a filter above. Keep the pros and cons that are true for you, flip ones that cut the other way, and dismiss the rest.'}</p>`;
 }
 function toggleFilter(id){
   const w=weighOf(weighId);
@@ -1016,23 +1110,24 @@ function toggleFilter(id){
 function sugText(fid,side,i){ const f=filterById(fid); return (side==='pro'?f.pros:f.cons)[i]; }
 function keepSug(fid,side,i,flip){
   const w=weighOf(weighId);
-  w.items.push({id:uid('i'), side: flip?(side==='pro'?'con':'pro'):side, text:sugText(fid,side,i), weight:2, source:filterById(fid).name});
+  w.items.push({id:uid('i'), opt:w.active, side: flip?(side==='pro'?'con':'pro'):side, text:sugText(fid,side,i), weight:2, source:filterById(fid).name});
   save(db); renderWeigh();
 }
 function dismissSug(fid,side,i){
-  const w=weighOf(weighId); w.dismissed.push(sugText(fid,side,i)); save(db); renderWeigh();
+  const w=weighOf(weighId); w.dismissed.push(w.active+'|'+sugText(fid,side,i)); save(db); renderWeigh();
 }
 
 /* ── pros & cons ── */
-function tally(w){
-  const pros=w.items.filter(i=>i.side==='pro'), cons=w.items.filter(i=>i.side==='con');
+function tally(w, opt){
+  const items=opt ? w.items.filter(i=>i.opt===opt) : w.items;
+  const pros=items.filter(i=>i.side==='pro'), cons=items.filter(i=>i.side==='con');
   const P=pros.reduce((a,i)=>a+i.weight,0), C=cons.reduce((a,i)=>a+i.weight,0);
   const tot=P+C, diff=P-C;
   const lean = !tot ? 'unweighed' : Math.abs(diff)<=tot*0.15 ? 'too close to call' : diff>0 ? 'leans yes' : 'leans no';
   return {pros,cons,P,C,tot,diff,lean};
 }
 function renderItems(w){
-  const t=tally(w);
+  const t=tally(w, w.active);
   const row=i=>`<div class="item">
     <span class="txt" onclick="editItem('${i.id}')">${esc(i.text)}<span class="src">${esc(i.source||'')}</span></span>
     <span class="wt" title="How much this weighs — tap to change" onclick="cycleWeight('${i.id}')">${'●'.repeat(i.weight)}${'○'.repeat(3-i.weight)}</span>
@@ -1040,13 +1135,14 @@ function renderItems(w){
   document.getElementById('wPros').innerHTML = t.pros.length ? t.pros.map(row).join('') : `<div class="empty" style="padding:8px">None yet</div>`;
   document.getElementById('wCons').innerHTML = t.cons.length ? t.cons.map(row).join('') : `<div class="empty" style="padding:8px">None yet</div>`;
   const pct = t.tot ? Math.round(t.P/t.tot*100) : 50;
+  const name = multi(w) ? `<b style="color:var(--gold-soft)">${esc(optOf(w,w.active).name)}</b>: ` : '';
   document.getElementById('wScale').innerHTML = `<div class="bar"><div class="p" style="width:${pct}%"></div><div class="c" style="width:${100-pct}%"></div></div>
-    <div class="lbl">Pros <b style="color:var(--teal)">${t.P}</b> · Cons <b style="color:var(--rose)">${t.C}</b> — ${t.lean}</div>`;
+    <div class="lbl">${name}Pros <b style="color:var(--teal)">${t.P}</b> · Cons <b style="color:var(--rose)">${t.C}</b> — ${multi(w)?`net ${t.diff>0?'+':''}${t.diff}`:t.lean}</div>`;
 }
 function addOwnItem(){
   const el=document.getElementById('wItemText'), text=el.value.trim(); if(!text) return;
   const w=weighOf(weighId);
-  w.items.push({id:uid('i'), side:document.getElementById('wItemSide').value, text, weight:2, source:'my own'});
+  w.items.push({id:uid('i'), opt:w.active, side:document.getElementById('wItemSide').value, text, weight:2, source:'my own'});
   el.value=''; save(db); renderWeigh();
 }
 function cycleWeight(id){ const it=weighOf(weighId).items.find(i=>i.id===id); it.weight=it.weight%3+1; save(db); renderWeigh(); }
@@ -1060,28 +1156,30 @@ async function editItem(id){
 const LEAN = { for:{label:'go for it', v:1}, caution:{label:'proceed with caution', v:.3}, mixed:{label:'mixed', v:0},
                pray:{label:'pray more first', v:0}, against:{label:'hold off', v:-1} };
 const KNOWS = ['', 'knows a little', 'knows it well', 'knows it deeply'];
-function counselLean(w){
-  if(!w.counsel.length) return {score:0, label:'—'};
-  const wsum=w.counsel.reduce((a,c)=>a+c.knows,0);
-  const score=w.counsel.reduce((a,c)=>a+LEAN[c.lean].v*c.knows,0)/wsum;
+function counselLean(w, opt){
+  const list = opt ? w.counsel.filter(c=>c.opt===opt) : w.counsel;
+  if(!list.length) return {score:0, label:'—', n:0};
+  const wsum=list.reduce((a,c)=>a+c.knows,0);
+  const score=list.reduce((a,c)=>a+LEAN[c.lean].v*c.knows,0)/wsum;
   const label = score>=.6?'for it' : score>=.2?'cautiously for it' : score>-.2?'mixed' : score>-.6?'cautiously against' : 'against it';
-  return {score,label};
+  return {score,label,n:list.length};
 }
 function renderCounsel(w){
   document.getElementById('wCounsel').innerHTML = w.counsel.length ? w.counsel.map(c=>`
     <div class="card counsel">
       <span class="x" style="float:right;cursor:pointer;color:var(--ink-faint)" onclick="removeCounsel('${c.id}')">✕</span>
       <div class="who">${esc(c.who)}<span class="lean ${c.lean}">${LEAN[c.lean].label}</span></div>
-      <div class="meta">${esc(c.rel)} · ${KNOWS[c.knows]} · ${fmt(c.date)}</div>
+      <div class="meta">${multi(w)&&optOf(w,c.opt)?`on <b>${esc(optOf(w,c.opt).name)}</b> · `:''}${esc(c.rel)} · ${KNOWS[c.knows]} · ${fmt(c.date)}</div>
       ${c.said?`<div class="said">“${esc(c.said)}”</div>`:''}
     </div>`).join('') : `<div class="empty" style="padding:8px 4px 14px">No counsel recorded yet.</div>`;
 }
 function addCounsel(){
   const who=cWho.value.trim(); if(!who){ toast('Who gave the counsel?'); return; }
   const w=weighOf(weighId);
-  const c={id:uid('c'), who, rel:cRel.value, knows:+cKnows.value, lean:cLean.value, said:cSaid.value.trim(), date:new Date().toISOString().slice(0,10)};
+  const opt = multi(w) ? cOpt.value : w.options[0].id;
+  const c={id:uid('c'), opt, who, rel:cRel.value, knows:+cKnows.value, lean:cLean.value, said:cSaid.value.trim(), date:new Date().toISOString().slice(0,10)};
   w.counsel.push(c);
-  if(cPoint.value.trim()) w.items.push({id:uid('i'), side:cPointSide.value, text:cPoint.value.trim(), weight:c.knows, source:'counsel: '+who});
+  if(cPoint.value.trim()) w.items.push({id:uid('i'), opt, side:cPointSide.value, text:cPoint.value.trim(), weight:c.knows, source:'counsel: '+who});
   ['cWho','cSaid','cPoint'].forEach(id=>document.getElementById(id).value='');
   save(db); renderWeigh(); toast('Counsel recorded');
 }
@@ -1090,15 +1188,48 @@ async function removeCounsel(id){
   const w=weighOf(weighId); w.counsel=w.counsel.filter(c=>c.id!==id); save(db); renderWeigh();
 }
 function askForCounsel(){
-  const w=weighOf(weighId), t=tally(w);
-  const top=list=>list.slice().sort((a,b)=>b.weight-a.weight).slice(0,3).map(i=>i.text.toLowerCase()).join('; ');
-  const text=`I'm trying to make a wise decision about "${w.title}" and I'd value your perspective.`+
-    (t.pros.length?` On the plus side: ${top(t.pros)}.`:'')+(t.cons.length?` What gives me pause: ${top(t.cons)}.`:'')+
-    ` What do you see that I might be missing? Is there anything that concerns you?`;
+  const w=weighOf(weighId);
+  const top=list=>list.slice().sort((a,b)=>b.weight-a.weight).slice(0,2).map(i=>i.text.toLowerCase()).join('; ');
+  let text;
+  if(multi(w)){
+    text=`I'm trying to make a wise decision about "${w.title}" and I'd value your perspective. The options I'm weighing:`+
+      w.options.map((o,i)=>{ const t=tally(w,o.id); return `\n${String.fromCharCode(65+i)}) ${o.name}`+(t.pros.length?` — for it: ${top(t.pros)}`:'')+(t.cons.length?`; against it: ${top(t.cons)}`:''); }).join('')+
+      `\nWhich would you lean toward, and what do you see that I might be missing?`;
+  } else {
+    const t=tally(w,w.options[0].id);
+    text=`I'm trying to make a wise decision about "${w.title}" and I'd value your perspective.`+
+      (t.pros.length?` On the plus side: ${top(t.pros)}.`:'')+(t.cons.length?` What gives me pause: ${top(t.cons)}.`:'')+
+      ` What do you see that I might be missing? Is there anything that concerns you?`;
+  }
   const copy=()=>(navigator.clipboard?navigator.clipboard.writeText(text):Promise.reject())
     .then(()=>toast('Copied — send it to someone wise'),()=>ask('Copy this message and send it:', text, {ok:'Done'}));
   if(navigator.share) navigator.share({text}).catch(e=>{ if(!e||e.name!=='AbortError') copy(); });
   else copy();
+}
+
+/* ── comparing options ── */
+function ranked(w){
+  return w.options.map((o,i)=>({o, letter:String.fromCharCode(65+i), t:tally(w,o.id), cl:counselLean(w,o.id)}))
+    .sort((a,b)=>b.t.diff-a.t.diff);
+}
+function renderCompare(w){
+  const box=document.getElementById('wCompare');
+  if(!multi(w)){
+    box.innerHTML=`<button class="primary" onclick="toGates('${w.options[0].id}')">Take it to the gates →</button>`;
+    return;
+  }
+  const r=ranked(w), lead=r[0].t.tot ? r[0].o.id : null;
+  box.innerHTML = `<div class="compare">` + r.map(x=>`
+    <div class="cmp ${x.o.id===lead?'lead':''}">
+      <div class="cmp-head"><span class="opt-letter">${x.letter}</span><b>${esc(x.o.name)}</b>${x.o.id===lead?'<span class="lean for">leads your list</span>':''}</div>
+      <div class="cmp-nums">
+        <span>Pros <b style="color:var(--teal)">${x.t.P}</b></span>
+        <span>Cons <b style="color:var(--rose)">${x.t.C}</b></span>
+        <span>Net <b>${x.t.diff>0?'+':''}${x.t.diff}</b></span>
+        <span>Counsel <b>${x.cl.n?x.cl.label+' ('+x.cl.n+')':'—'}</b></span>
+      </div>
+      <button class="ghost" style="margin-top:8px" onclick="toGates('${x.o.id}')">Choose this — take it to the gates →</button>
+    </div>`).join('') + `</div>`;
 }
 
 /* ── insight engine ── */
@@ -1114,41 +1245,66 @@ function themes(w){
 }
 function insightsFor(w){
   const out=[], add=(tone,text)=>out.push({tone,text});
-  const t=tally(w), cl=counselLean(w), n=w.counsel.length;
-  if(!w.items.length) add('info','Start by running the idea through a filter or two — pros and cons will surface for you to keep or dismiss.');
-  else {
-    if(t.lean==='too close to call') add('info',`It’s close (${t.P} to ${t.C}). When the list is balanced, the list isn’t the decider — counsel, peace, and the gates usually are. A close call between two good options is often freedom, not a trap.`);
+  const n=w.counsel.length, all=tally(w);
+  if(!w.items.length) add('info', multi(w)
+    ? 'Pick an option above, run it through a filter or two, and keep the pros and cons that are true. Then do the same for each other option.'
+    : 'Start by running the idea through a filter or two — pros and cons will surface for you to keep or dismiss.');
+  else if(multi(w)){
+    const r=ranked(w), a=r[0], b=r[1];
+    const empty=r.filter(x=>!x.t.tot);
+    if(empty.length) add('warn',`You haven’t weighed <b>${empty.map(x=>esc(x.o.name)).join('</b>, <b>')}</b> yet. Give every option a fair hearing — “the first to plead his case seems right, until another comes and examines him” (Prov 18:17).`);
+    if(a.t.tot && b.t.tot){
+      if(Math.abs(a.t.diff-b.t.diff) <= Math.max(2,(a.t.tot+b.t.tot)*0.12))
+        add('info',`<b>${esc(a.o.name)}</b> and <b>${esc(b.o.name)}</b> are close (net ${a.t.diff} vs ${b.t.diff}). When two options are both good, the choice is often freedom, not a trap — let counsel, peace, and the gates settle it.`);
+      else add('good',`On your lists, <b>${esc(a.o.name)}</b> leads (net ${a.t.diff>0?'+':''}${a.t.diff}, next best ${b.t.diff>0?'+':''}${b.t.diff}).`);
+    }
+    const neg=r.filter(x=>x.t.tot && x.t.diff<0);
+    if(neg.length && neg.length<r.length) add('info',`${neg.map(x=>`<b>${esc(x.o.name)}</b>`).join(' and ')} come${neg.length===1?'s':''} out with more cons than pros. Ruling out an option is real progress.`);
+    const withC=r.filter(x=>x.cl.n).sort((x,y)=>y.cl.score-x.cl.score);
+    if(withC.length && a.t.tot && withC[0].o.id!==a.o.id && withC[0].cl.score>=.2)
+      add('warn',`Your list favors <b>${esc(a.o.name)}</b>, but your counsel leans toward <b>${esc(withC[0].o.name)}</b>. What do they see that your list doesn’t? “He that hearkeneth unto counsel is wise” (Prov 12:15).`);
+    const noC=r.filter(x=>!x.cl.n);
+    if(n && noC.length) add('info',`No one has spoken to <b>${noC.map(x=>esc(x.o.name)).join('</b>, <b>')}</b> yet. Ask about every option, not just your favorite.`);
+  } else {
+    const t=all;
+    if(t.lean==='too close to call') add('info',`It’s close (${t.P} to ${t.C}). When the list is balanced, the list isn’t the decider — counsel, peace, and the gates usually are.`);
     else if(t.diff>0) add('good',`Your weighing leans <b>yes</b> (${t.P} to ${t.C}).`);
     else add('warn',`Your weighing leans <b>no</b> (${t.C} against ${t.P}). A clear no is also a faithful decision.`);
-    const heavy=w.items.filter(i=>i.weight===3);
-    if(heavy.length) add('info','Carrying the most weight: '+heavy.map(i=>`<b>${esc(i.text)}</b> (${i.side})`).join(', ')+'.');
-    const heavyCons=t.cons.filter(i=>i.weight===3);
-    if(t.diff>0 && heavyCons.length) add('warn',`One heavy con can outweigh many small pros. Is “${esc(heavyCons[0].text)}” a dealbreaker, or a cost you can carry with open eyes (Luke 14:28)?`);
     if(t.pros.length && !t.cons.length) add('warn','No cons at all? Every real decision costs something. Ask someone honest what it would cost you.');
+    const cl=counselLean(w), cSign=cl.score>=.2?1:cl.score<=-.2?-1:0, lSign=t.lean==='leans yes'?1:t.lean==='leans no'?-1:0;
+    if(n && lSign && cSign && lSign!==cSign) add('warn',`Your list ${t.lean}, but your counsel leans ${cl.label}. What do they see that your list doesn’t? (Prov 12:15)`);
   }
-  const fearful=t.cons.filter(i=>/afraid|fear|what if|people (will|might|would) think|embarrass|look like|disappoint|judg/i.test(i.text));
+  if(w.items.length){
+    const heavy=w.items.filter(i=>i.weight===3);
+    const on=i=>multi(w)&&optOf(w,i.opt)?` — ${esc(optOf(w,i.opt).name)}`:'';
+    if(heavy.length) add('info','Carrying the most weight: '+heavy.slice(0,4).map(i=>`<b>${esc(i.text)}</b> (${i.side}${on(i)})`).join(', ')+'.');
+  }
+  const fearful=all.cons.filter(i=>/afraid|fear|what if|people (will|might|would) think|embarrass|look like|disappoint|judg/i.test(i.text));
   if(fearful.length) add('warn',`Some cons sound like fear rather than wisdom: “${esc(fearful[0].text)}”. “The fear of man bringeth a snare” (Prov 29:25) — name it, but don’t let it vote.`);
 
   if(!n) add('warn','No counsel yet. “Without counsel purposes are disappointed: but in the multitude of counsellors they are established” (Prov 15:22). Who knows you — and this situation — well?');
   else {
-    add(cl.score>=.2?'good':cl.score<=-.2?'warn':'info',`Weighted by how well each person knows the situation, your counsel leans <b>${cl.label}</b> (${n} voice${n===1?'':'s'}).`);
+    if(!multi(w)){
+      const cl=counselLean(w);
+      add(cl.score>=.2?'good':cl.score<=-.2?'warn':'info',`Weighted by how well each person knows the situation, your counsel leans <b>${cl.label}</b> (${n} voice${n===1?'':'s'}).`);
+      const leans=new Set(w.counsel.map(c=>c.lean));
+      if(n>=2 && leans.size===1) add('good',`Your counselors agree: ${LEAN[w.counsel[0].lean].label}. Agreement among people who love you is one of the clearest ways God gives direction.`);
+      if(leans.has('for') && leans.has('against')) add('info','Your counsel is divided. Ask the ones who differ what each of them sees — disagreement often points to the real question.');
+    }
     if(n===1) add('info','One voice so far. Try for at least one more — ideally someone who knows you deeply, and someone who knows this kind of decision.');
-    const leans=new Set(w.counsel.map(c=>c.lean));
-    if(n>=2 && leans.size===1) add('good',`Your counselors agree: ${LEAN[w.counsel[0].lean].label}. Agreement among people who love you is one of the clearest ways God gives direction.`);
-    if(leans.has('for') && leans.has('against')) add('info','Your counsel is divided. Ask the ones who differ what each of them sees — disagreement often points to the real question.');
-    const listSign=t.lean==='leans yes'?1:t.lean==='leans no'?-1:0, cSign=cl.score>=.2?1:cl.score<=-.2?-1:0;
-    if(listSign && cSign && listSign!==cSign) add('warn',`Your list ${t.lean}, but your counsel leans ${cl.label}. What do they see that your list doesn’t? “He that hearkeneth unto counsel is wise” (Prov 12:15).`);
     const deep=w.counsel.filter(c=>c.knows===3 && (c.lean==='against'||c.lean==='caution'));
-    if(deep.length) add('warn',`${deep.map(c=>esc(c.who)).join(' and ')} — who know${deep.length===1?'s':''} this deeply — urged caution. Give that extra weight.`);
+    if(deep.length) add('warn',deep.map(c=>`<b>${esc(c.who)}</b>`+(multi(w)&&optOf(w,c.opt)?` (on ${esc(optOf(w,c.opt).name)})`:'')).join(' and ')+` — who know${deep.length===1?'s':''} this deeply — urged caution. Give that extra weight.`);
     const th=themes(w);
     if(th.length) add('info',`A theme running through more than one voice: <b>${th.map(esc).join(', ')}</b>. When several people independently bring up the same thing, pay attention.`);
     const pray=w.counsel.filter(c=>c.lean==='pray');
     if(pray.length) add('info',`${pray.length===1?esc(pray[0].who)+' said':pray.length+' people said'} to pray more first. If you wait, give it a decide-by date so waiting doesn’t become drifting.`);
     if(n>=2 && new Set(w.counsel.map(c=>c.rel)).size===1) add('info',`All your counsel so far is from one kind of relationship (${esc(w.counsel[0].rel.toLowerCase())}). A different vantage point could help.`);
+    if(!w.counsel.some(c=>/family|parent|spouse/i.test(c.rel)) && n>=1) add('info','No one from your family has weighed in yet. They may not get the final say, but they usually see things others can’t (Prov 1:8).');
   }
   if(w.filters.length<2) add('info','Try another filter or two — 10 / 10 / 10 and Fear vs. faith are good ones for seeing past the moment.');
   if(majorOf(w.major)) add('info',`This serves your <b>${esc(majorOf(w.major).name)}</b> decision. Keep its aim in view: “${esc(majorOf(w.major).aim)}”`);
-  if(w.items.length>=4 && n>=2) add('good','You’ve weighed this well. More information rarely brings more clarity from here — it usually takes courage. Take it to the gates.');
+  const everyWeighed = w.options.every(o=>tally(w,o.id).tot);
+  if(w.items.length>=4 && n>=2 && everyWeighed) add('good','You’ve weighed this well. More information rarely brings more clarity from here — it usually takes courage. '+(multi(w)?'Choose an option and take it to the gates.':'Take it to the gates.'));
   return out;
 }
 function renderInsight(w){
@@ -1156,35 +1312,43 @@ function renderInsight(w){
 }
 
 /* ── hand-off to the discern flow ── */
-function toGates(){
-  const w=weighOf(weighId);
+let fromOpt=null;
+function toGates(optId){
+  const w=weighOf(weighId), o=optOf(w,optId)||w.options[0];
   weighId=null;
   go('discern'); resetFlow();
-  fromWeigh=w.id;
-  dTitle.value=w.title; pickMajor(w.major||'');
-  const worst=w.items.filter(i=>i.side==='con').sort((a,b)=>b.weight-a.weight)[0];
+  fromWeigh=w.id; fromOpt=o.id;
+  dTitle.value = multi(w) ? o.name : w.title; pickMajor(w.major||'');
+  const worst=w.items.filter(i=>i.opt===o.id && i.side==='con').sort((a,b)=>b.weight-a.weight)[0];
   if(worst) dFear.value='What gives me pause: '+worst.text;
-  // pre-answer the Counsel gate from what was recorded
-  const cl=counselLean(w);
-  const ans=!w.counsel.length?'Haven\'t asked':cl.score>=.6?'For it':cl.score<=-.6?'Against it':'Mixed';
+  const cl=counselLean(w,o.id);
+  const ans=!cl.n?'Haven\'t asked':cl.score>=.6?'For it':cl.score<=-.6?'Against it':'Mixed';
   document.querySelectorAll('#gates .gate[data-gate="counsel"] button').forEach(b=>{ if(b.textContent.trim()===ans) pickGate(b); });
-  toast('Brought from the scales — counsel gate pre-filled');
+  toast(multi(w)?`Taking “${o.name}” to the gates`:'Brought from the scales — counsel gate pre-filled');
 }
 async function setAsideWeigh(){
-  if(!await askConfirm('Set this idea aside? It will be removed from your scales.')) return;
+  if(!await askConfirm('Set this decision aside? It will be removed from your scales.','Set aside')) return;
   db.weighs=db.weighs.filter(w=>w.id!==weighId); save(db); closeWeigh(); toast('Set aside');
 }
 function weighSnapshot(id){
   const w=id&&weighOf(id); if(!w) return {};
-  return { weighId:w.id, weighed:{ items:w.items.map(i=>({side:i.side,text:i.text,weight:i.weight})), counsel:w.counsel.map(c=>({...c})) } };
+  return { weighId:w.id, weighed:{
+    chosen: fromOpt, title:w.title,
+    options:w.options.map(o=>({...o})),
+    items:w.items.map(i=>({opt:i.opt, side:i.side, text:i.text, weight:i.weight})),
+    counsel:w.counsel.map(c=>({...c})) } };
 }
 function weighSheetHTML(d){
-  if(!d.weighed) return '';
-  const t=tally(d.weighed);
+  const s=d.weighed; if(!s) return '';
+  if(!s.options) s.options=[{id:'o1',name:d.title}], s.items.forEach(i=>i.opt=i.opt||'o1'), s.counsel.forEach(c=>c.opt=c.opt||'o1'), s.chosen='o1';
+  const chosen=s.chosen||s.options[0].id, t=tally(s,chosen);
   const li=i=>`<div style="margin-top:3px">${'●'.repeat(i.weight)} ${esc(i.text)}</div>`;
-  return `<p class="quiet"><b>Weighed:</b> pros ${t.P} · cons ${t.C} — ${t.lean}</p>
+  const others = s.options.length>1 ? `<p class="quiet"><b>Chosen from ${s.options.length} options:</b> `+
+    s.options.map(o=>{const x=tally(s,o.id); return `${o.id===chosen?'<b style="color:var(--gold-soft)">':''}${esc(o.name)} (net ${x.diff>0?'+':''}${x.diff})${o.id===chosen?'</b>':''}`;}).join(' · ')+`</p>` : '';
+  const counsel=s.counsel.filter(c=>c.opt===chosen || s.options.length>1);
+  return `${others}<p class="quiet"><b>Weighed:</b> pros ${t.P} · cons ${t.C} — ${t.lean}</p>
     <div class="pc quiet" style="margin-top:6px"><div><b style="color:var(--teal)">Pros</b>${t.pros.map(li).join('')||'—'}</div><div><b style="color:var(--rose)">Cons</b>${t.cons.map(li).join('')||'—'}</div></div>
-    ${d.weighed.counsel.length?`<p class="quiet" style="margin-top:10px"><b>Counsel (${counselLean(d.weighed).label}):</b></p>`+d.weighed.counsel.map(c=>`<p class="quiet" style="margin-top:4px">· ${esc(c.who)} <span class="lean ${c.lean}">${LEAN[c.lean].label}</span>${c.said?` — “${esc(c.said)}”`:''}</p>`).join(''):''}
+    ${counsel.length?`<p class="quiet" style="margin-top:10px"><b>Counsel:</b></p>`+counsel.map(c=>`<p class="quiet" style="margin-top:4px">· ${esc(c.who)} <span class="lean ${c.lean}">${LEAN[c.lean].label}</span>${s.options.length>1&&optOf(s,c.opt)?` on ${esc(optOf(s,c.opt).name)}`:''}${c.said?` — “${esc(c.said)}”`:''}</p>`).join(''):''}
     <hr class="divider">`;
 }
 
